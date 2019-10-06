@@ -1,0 +1,104 @@
+$sidebarPadding: 7px;
+$sidebarMaxWidth: 275px;
+
+@mixin hoverEffect {
+  border: 1px solid #eee;
+  transition: border 400ms;
+  background-color: white;
+
+  &:hover, &:focus{
+    border: 1px solid #9f9f9f;
+    box-shadow: 0 1px 8px #eee;
+  }
+}
+
+.sidebar{
+  background-color: white;
+  max-width: $sidebarMaxWidth + ($sidebarPadding * 2);
+  height: calc(100% - #{$sidebarPadding * 2});
+  padding: $sidebarPadding - 2px;
+  box-shadow: 0 1px 6px -2px #666;
+  border: 1px solid #d7d7d72e;
+
+  &__options{
+    display: flex;
+    padding: 5px 0 0 0;
+
+    &__search_bar{
+      flex: 1;
+      text-align: center;
+      padding: 7px 0;
+
+      @include hoverEffect;
+    }
+
+    &__new_note{
+      margin-left: 5px;
+      padding: 0 10px;
+      @include hoverEffect;
+    }
+  }
+
+  &__separator{
+    margin: 10px ($sidebarPadding * -1);
+    border-bottom: none;
+    border-top-color: #d7d7d72e;
+  }
+
+  &__notes_list{
+    &__item{
+      cursor: pointer;
+      &__header{
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+
+        &__title{
+          font-size: 1.2em;
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            background-color: #666;
+            left: 0;
+            right: 100%;
+            height: 1px;
+            bottom: -2px;
+            transition: right 400ms ease-in;
+          }
+
+          &--active{
+            &::before{
+              right: 0;
+            }
+          }
+        }
+
+        &__options{
+          padding: 0 4px;
+          border: none;
+          cursor: pointer;
+          transition: transform 400ms ease-in-out;
+          background-color: transparent;
+
+          &:hover, &:focus{
+            transform: scale(1.2);
+          }
+        }
+      }
+
+      &__content{
+        font-size: 0.8em;
+        font-weight: 200;
+        color: #282828;
+      }
+
+      &:hover, &:focus{
+        & .sidebar__notes_list__item__header__title::before{
+          right: 0;
+        }
+      }
+    }
+  }
+}
