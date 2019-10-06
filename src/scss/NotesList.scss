@@ -1,6 +1,7 @@
 .notes_list{
   &__item{
     cursor: pointer;
+    margin-bottom: 15px;
     &__header{
       display: flex;
       justify-content: space-between;
