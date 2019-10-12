@@ -28,4 +28,30 @@
       padding: 15px;
     }
   }
+
+  &__switch_mode{
+    $switchModeShadowColor: rgba(0, 0, 0, 0.53);
+
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    background-color: #307bff;
+    border: none;
+    border-radius: 50%;
+    padding: 14px;
+    color: white;
+    cursor: pointer;
+    transition: all 400ms ease-in-out;
+    box-shadow: 0 1px 4px 0 $switchModeShadowColor;
+
+    &:hover, &:focus{
+      background-color: #2962c3;
+      box-shadow: 0 1px 2px 0 $switchModeShadowColor;
+    }
+
+    &:active{
+      background-color: #17376e;
+      box-shadow: 0 1px 2px 0 $switchModeShadowColor;
+    }
+  }
 }
