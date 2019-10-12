@@ -19,9 +19,7 @@ $sidebarMaxWidth: 275px;
   padding: $sidebarPadding - 2px;
   box-shadow: 0 1px 6px -2px #666;
   border: 1px solid #d7d7d72e;
-
-  overflow-y: scroll;
-  overflow-x: hidden;
+  position: relative;
 
   &__options{
     display: flex;

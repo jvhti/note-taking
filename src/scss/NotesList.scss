@@ -1,7 +1,18 @@
+$notesListPadding: 5px;
+
 .notes_list{
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 55px;
+
   &__item{
     cursor: pointer;
-    margin-bottom: 15px;
+    margin-top: 5px;
+    padding: 10px $notesListPadding;
     &__header{
       display: flex;
       justify-content: space-between;
