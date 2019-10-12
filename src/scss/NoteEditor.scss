@@ -1,0 +1,31 @@
+.note_editor{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+
+  &__title{
+    display: flex;
+    & > input {
+      text-align: left;
+      font-size: 1.35em;
+      padding: 12px 0 12px 15px;
+      border: none;
+
+      &:hover, &:focus{
+        border: none;
+      }
+    }
+    padding: 0 5px;
+  }
+
+  &__editor{
+    display: flex;
+    flex: 1;
+    & > textarea {
+      flex: 1;
+      resize: none;
+      padding: 15px;
+    }
+  }
+}

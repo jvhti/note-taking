@@ -15,7 +15,7 @@ function NotesListItem() {
 }
 
 function NotesList() {
-    const notes = [1, 2, 3, 4, 5, 6, 7, 3, 4, 5, 6, 7, 3, 4, 5, 6, 7, 3, 4, 5, 6, 7];
+    const notes = [1, 2, 3];
     return (
         <ul className="notes_list">
             { notes.map((n) => <NotesListItem key={n}/>) }
