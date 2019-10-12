@@ -1,0 +1,63 @@
+@mixin modalSeparator($offsetY){
+  content: '';
+  position: absolute;
+  transform: translateY($offsetY);
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-bottom: 1px solid #c7c7c7;
+}
+
+.modal{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background-color: white;
+  padding: 15px;
+  border: 1px solid #c7c7c7;
+  box-shadow: 0 1px 8px #eee;
+  transition: all 400ms ease-in-out;
+
+  &:hover, &:focus-within{
+    border: 1px solid #a4a4a4;
+    box-shadow: 0 1px 5px #eee;
+  }
+
+  &__header{
+    $marginBottom: 15px;
+    margin-bottom: $marginBottom;
+
+    font-size: 1.1em;
+    font-weight: bold;
+
+    &::after{
+      @include modalSeparator($marginBottom / 2);
+    }
+  }
+
+  &__body{
+    padding: 10px 0 15px 0;
+    font-size: 0.9em;
+    color: #2c2c2c;
+  }
+
+  &__options{
+    $paddingTop: 16px;
+    padding-top: $paddingTop;
+    &::before{
+      @include modalSeparator(($paddingTop * -1) - 1);
+    }
+
+    &__option{
+      &:not(:last-child){
+        margin-right: 5px;
+      }
+
+      &--block{
+        width: 100%;
+      }
+    }
+  }
+}
