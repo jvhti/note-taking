@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.scss';
 import SideNavigation from "./SideNavigation";
-import NoteEditor from "./NoteEditor";
+import NoteMain from "./NoteMain";
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {faEdit, faEllipsisH, faFileAlt, faGlasses} from '@fortawesome/free-solid-svg-icons';
 
@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="App">
         <SideNavigation/>
-        <NoteEditor/>
+        <NoteMain/>
     </div>
   );
 }
