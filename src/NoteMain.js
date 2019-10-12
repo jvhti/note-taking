@@ -5,10 +5,11 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 // eslint-disable-next-line
 const text = "# 1\n" + "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +   "## 2\n" +    "### 3\n" +    "\n";
 
+
 function ModeSwitchButton(props) {
     const isReadState = props.state === "read";
     return (
-        <button className={`note_main__switch_mode note_main__switch_mode--${props.state}`}>
+        <button onClick={props.onSwitch} className={`note_main__switch_mode note_main__switch_mode--${props.state}`}>
             <FontAwesomeIcon size="2x" icon={isReadState ? "glasses" : "edit"}/>
             <span className="sr-only">{isReadState ? "Read" : "Edit"}</span>
         </button>
@@ -33,18 +34,29 @@ function NoteViewer() {
     );
 }
 
-function NoteMain() {
-    return (
-        <main className="note_main">
-            <div className="note_main__title">
-                <input className="sidebar__options__search_bar" type="text" placeholder="Name your note..."/>
-            </div>
-            { /* <NoteEditor/> */ }
-            <NoteViewer/>
+class NoteMain extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {"isEditing": true};
 
-            <ModeSwitchButton state="edit"/>
-        </main>
-    );
+        this.switchMode = this.switchMode.bind(this);
+    }
+
+    switchMode(){
+        this.setState({"isEditing": !this.state.isEditing});
+    }
+
+    render() {
+        return (
+            <main className="note_main">
+                <div className="note_main__title">
+                    <input className="sidebar__options__search_bar" type="text" placeholder="Name your note..."/>
+                </div>
+                { this.state.isEditing ? <NoteEditor/> : <NoteViewer/> }
+                <ModeSwitchButton onSwitch={this.switchMode} state={!this.state.isEditing ? "edit" : "read"}/>
+            </main>
+        );
+    }
 }
 
 export default NoteMain;

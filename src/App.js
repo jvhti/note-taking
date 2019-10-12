@@ -2,7 +2,6 @@ import React from 'react';
 import './App.scss';
 import SideNavigation from "./SideNavigation";
 import NoteMain from "./NoteMain";
-import Modal from "./Modal";
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {faEdit, faEllipsisH, faFileAlt, faGlasses} from '@fortawesome/free-solid-svg-icons';
 
@@ -16,7 +15,7 @@ function App() {
     <div className="App">
         <SideNavigation/>
         <NoteMain/>
-        <Modal/>
+        {/*<Modal/>*/}
     </div>
   );
 }
