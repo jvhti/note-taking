@@ -2,9 +2,10 @@ import React from "react";
 import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 
-function NotesListItemOptions() {
+function NotesListItemOptions({left, top}) {
+    const style = {left, top};
     return (
-        <ul className="notes_list__item__options_wrapper">
+        <ul style={style} className="notes_list__item__options_wrapper">
             <li className="notes_list__item__options_wrapper__option"><a href="#">Delete</a></li>
             <li className="notes_list__item__options_wrapper__option"><a href="#">Print</a></li>
             <li className="notes_list__item__options_wrapper__option"><a href="#">Share</a></li>
@@ -12,16 +13,14 @@ function NotesListItemOptions() {
     );
 }
 
-function NotesListItem(props) {
-    const options = props.isOptionsOpen === true ? <NotesListItemOptions/> : undefined;
+function NotesListItem() {
     return (
         <li className="notes_list__item" tabIndex="0">
             <div className="notes_list__item__header">
                 <span className="notes_list__item__header__title">Title of the Note</span>
-                <button className="notes_list__item__header__options"><FontAwesomeIcon icon="ellipsis-h"/><span className="sr-only">Options for note Title of the Note</span></button>
+                <button className="notes_list__item__header__options" onClick={(ev) => {console.log(ev.pageX, ev.pageY);}}><FontAwesomeIcon icon="ellipsis-h"/><span className="sr-only">Options for note Title of the Note</span></button>
             </div>
             <p className="notes_list__item__content">lorem ipsum dolor sit amet</p>
-            {options}
         </li>
     );
 }
@@ -36,7 +35,7 @@ class NotesList extends React.Component {
     render() {
         return (
             <ul className="notes_list">
-                {this.notes.map((n) => <NotesListItem isOptionsOpen={true} key={n}/>)}
+                {this.notes.map((n) => <NotesListItem key={n}/>)}
             </ul>
         );
     }
@@ -51,6 +50,7 @@ function SideNavigation() {
             </div>
             <hr className="sidebar__separator"/>
             <NotesList/>
+            <NotesListItemOptions left={222} top={84}/> {/* Can pick left and top offset from ev.pageX and ev.pageY */}
         </aside>
     );
 }
