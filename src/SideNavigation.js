@@ -1,6 +1,7 @@
 import React from "react";
 import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import NoteDatabaseInterface from "./Database/NoteDatabaseInterface";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -17,10 +18,12 @@ function NotesListItem(props) {
     return (
         <li className="notes_list__item" tabIndex="0">
             <div className="notes_list__item__header">
-                <span className="notes_list__item__header__title">Title of the Note</span>
-                <button className="notes_list__item__header__options" onClick={(ev) => {props.onOpenOptions(ev);}}><FontAwesomeIcon icon="ellipsis-h"/><span className="sr-only">Options for note Title of the Note</span></button>
+                <span className="notes_list__item__header__title">{props.title}</span>
+                <button className="notes_list__item__header__options" onClick={(ev) => {props.onOpenOptions(ev);}}>
+                    <FontAwesomeIcon icon="ellipsis-h"/><span className="sr-only">Options for note Title of the Note</span>
+                </button>
             </div>
-            <p className="notes_list__item__content">lorem ipsum dolor sit amet</p>
+            <p className="notes_list__item__content">{props.body}</p>
         </li>
     );
 }
@@ -32,24 +35,44 @@ class NotesList extends React.Component {
         this.state = {
             options: {
                 display: "none",
-                x: 222,
-                y: 84
-            }
+                x: 0,
+                y: 0,
+                id: null
+            },
+            notes: []
         };
 
-        this.notes = [1];
+        this.database = new NoteDatabaseInterface();
 
         this.closeOptions = this.closeOptions.bind(this);
+        this.updateList = this.updateList.bind(this);
+    }
+
+    updateList(){
+        this.database.getList(this.props.filterByTitle).then((x) => this.setState({
+            ...this.state,
+            notes: x
+        }));
+    }
+
+    componentDidMount() {
+        this.updateList();
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if(prevProps.filterByTitle !== this.props.filterByTitle)
+            this.updateList();
     }
 
     openOptions(key, ev){
         const newState = {
             ...this.state,
             options : {
-                    ...this.state.options,
-                    x: ev.clientX,
-                    y: ev.clientY,
-                    display: this._toggleOptionsVisibility()
+                ...this.state.options,
+                x: ev.clientX,
+                y: ev.clientY,
+                display: this.state.options.id === key && this.state.options.display === "block" ? "none" : "block",
+                id: key
             }
         };
 
@@ -61,20 +84,26 @@ class NotesList extends React.Component {
             }, 1);
     };
 
-    _toggleOptionsVisibility(){
-        return this.state.options.display === "block" ? "none" : "block";
-    }
+    closeOptions(ev) {
+        let parent = ev.target;
+        do {
+            parent = parent.parentElement;
+        }while (parent != null && !parent.classList.contains("notes_list__item__header__options"));
 
-    closeOptions() {
-        if (this.state.options.display === "block")
+        if (parent === null && this.state.options.display === "block")
             this.setState({
                 ...this.state,
                 options: {
                     ...this.state.options,
-                    display: "none"
+                    display: "none",
+                    id: null
                 }
             });
 
+        window.removeEventListener("click", this.closeOptions);
+    }
+
+    componentWillUnmount() {
         window.removeEventListener("click", this.closeOptions);
     }
 
@@ -86,7 +115,9 @@ class NotesList extends React.Component {
         return (
             <React.Fragment>
                 <ul className="notes_list">
-                    {this.notes.map((n) => <NotesListItem onOpenOptions={this.openOptions.bind(this, n)} key={n}/>)}
+                    { this.state.notes.map((note) =>
+                        <NotesListItem key={note.id} onOpenOptions={this.openOptions.bind(this, note.id)}
+                                       title={note.title} body={note.body}/>)}
                 </ul>
                 <NotesListItemOptions events={{
                     onDelete: this.onOptionsDelete,
@@ -99,17 +130,36 @@ class NotesList extends React.Component {
     }
 }
 
-function SideNavigation() {
-    return (
-        <aside className="sidebar">
-            <div className="sidebar__options">
-                <input className="sidebar__options__search_bar" type="search" placeholder="Search Notes"/>
-                <button className="sidebar__options__new_note"><FontAwesomeIcon icon="file-alt"/><span className="sr-only">Create new note</span></button>
-            </div>
-            <hr className="sidebar__separator"/>
-            <NotesList/>
-        </aside>
-    );
+class SideNavigation extends React.Component {
+    constructor(props){
+        super(props);
+
+        this.state = {searchValue: ""};
+
+        this.updateSearchValue = this.updateSearchValue.bind(this);
+    }
+
+    updateSearchValue(ev){
+        this.setState({
+            ...this.state,
+            searchValue: ev.target.value
+        });
+    }
+
+    render() {
+        return (
+            <aside className="sidebar">
+                <div className="sidebar__options">
+                    <input className="sidebar__options__search_bar" type="search" placeholder="Search Notes"
+                           value={this.state.searchValue} onChange={this.updateSearchValue}/>
+                    <button className="sidebar__options__new_note"><FontAwesomeIcon icon="file-alt"/><span
+                        className="sr-only">Create new note</span></button>
+                </div>
+                <hr className="sidebar__separator"/>
+                <NotesList filterByTitle={this.state.searchValue}/>
+            </aside>
+        );
+    }
 }
 
 export default SideNavigation;
