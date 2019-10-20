@@ -2,35 +2,37 @@ import React from "react";
 import './scss/NoteMain.scss';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import MediaQuery from 'react-responsive';
+import MarkdownIt from 'markdown-it';
+import "../node_modules/github-markdown-css/github-markdown.css";
 
 // eslint-disable-next-line
-const text = "# 1\n" + "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +   "## 2\n" +    "### 3\n" +    "\n";
+const sampleText = "# 1\n" + "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +   "## 2\n" +    "### 3\n" +    "\n";
 
 
-function ModeSwitchButton(props) {
-    const isReadState = props.state === "read";
+function ModeSwitchButton({ onSwitch, state }) {
+    const isReadState = state === "read";
     return (
-        <button onClick={props.onSwitch} className={`note_main__switch_mode note_main__switch_mode--${props.state}`}>
+        <button onClick={ onSwitch } className={`note_main__switch_mode note_main__switch_mode--${state}`}>
             <FontAwesomeIcon size="2x" icon={isReadState ? "glasses" : "edit"}/>
             <span className="sr-only">{isReadState ? "Read" : "Edit"}</span>
         </button>
     );
 }
 
-function NoteEditor() {
+function NoteEditor({ text, updateNoteText }) {
     return (
         <div className="note_main__editor">
-            <textarea className="note_main__editor">{text}</textarea>
+            <textarea className="note_main__editor" value={text} onChange={updateNoteText}/>
         </div>
     );
 }
 
-function NoteViewer() {
+function NoteViewer({ text }) {
+    const parsedText = MarkdownIt().render(text);
+
     return (
         <div className="note_main__viewer">
-            <div className="note_main__viewer__render">
-                {}
-            </div>
+            <div className="note_main__viewer__render markdown-body" dangerouslySetInnerHTML={{__html: parsedText}}/>
         </div>
     );
 }
@@ -38,16 +40,26 @@ function NoteViewer() {
 class NoteMain extends React.Component{
     constructor(props){
         super(props);
-        this.state = {"isEditing": true};
+        this.state = {"isEditing": true, noteText: sampleText};
 
         this.switchMode = this.switchMode.bind(this);
+        this.updateNoteText = this.updateNoteText.bind(this);
     }
 
     switchMode(){
         this.setState({"isEditing": !this.state.isEditing});
     }
 
+    updateNoteText(ev){
+        this.setState({
+            ...this.state,
+            noteText: ev.target.value
+        });
+    }
+
     render() {
+        const noteEditor = <NoteEditor text={this.state.noteText} updateNoteText={this.updateNoteText}/>;
+        const noteViewer = <NoteViewer text={this.state.noteText}/>;
         return (
             <main className="note_main">
                 <div className="note_main__title">
@@ -55,11 +67,11 @@ class NoteMain extends React.Component{
                 </div>
                 <div className="note_main__wrapper">
                     <MediaQuery minWidth="1000px">
-                        <NoteEditor/>
-                        <NoteViewer/>
+                        { noteEditor }
+                        { noteViewer }
                     </MediaQuery>
                     <MediaQuery maxWidth="1000px">
-                        { this.state.isEditing ? <NoteEditor/> : <NoteViewer/> }
+                        { this.state.isEditing ? noteEditor : noteViewer }
                     </MediaQuery>
                 </div>
                 <MediaQuery maxWidth="1000px">
