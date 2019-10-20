@@ -40,10 +40,15 @@ function NoteViewer({ text }) {
 class NoteMain extends React.Component{
     constructor(props){
         super(props);
-        this.state = {"isEditing": true, noteText: sampleText};
+        this.state = {
+            "isEditing": true,
+            noteTitle: "",
+            noteText: sampleText
+        };
 
         this.switchMode = this.switchMode.bind(this);
         this.updateNoteText = this.updateNoteText.bind(this);
+        this.updateNoteTitle = this.updateNoteTitle.bind(this);
     }
 
     switchMode(){
@@ -57,13 +62,21 @@ class NoteMain extends React.Component{
         });
     }
 
+    updateNoteTitle(ev){
+        this.setState({
+            ...this.state,
+            noteTitle: ev.target.value
+        });
+    }
+
     render() {
         const noteEditor = <NoteEditor text={this.state.noteText} updateNoteText={this.updateNoteText}/>;
         const noteViewer = <NoteViewer text={this.state.noteText}/>;
         return (
             <main className="note_main">
                 <div className="note_main__title">
-                    <input className="sidebar__options__search_bar" type="text" placeholder="Name your note..."/>
+                    <input className="sidebar__options__search_bar" type="text" placeholder="Name your note..."
+                           value={this.state.noteTitle} onChange={this.updateNoteTitle}/>
                 </div>
                 <div className="note_main__wrapper">
                     <MediaQuery minWidth="1000px">
