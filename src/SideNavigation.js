@@ -1,7 +1,7 @@
 import React from "react";
 import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
-import NoteDatabaseInterface from "./Database/NoteDatabaseInterface";
+import NoteManager from "./NoteManager";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -42,14 +42,12 @@ class NotesList extends React.Component {
             notes: []
         };
 
-        this.database = new NoteDatabaseInterface();
-
         this.closeOptions = this.closeOptions.bind(this);
         this.updateList = this.updateList.bind(this);
     }
 
     updateList(){
-        this.database.getList(this.props.filterByTitle).then((x) => this.setState({
+        NoteManager.database.getList(this.props.filterByTitle).then((x) => this.setState({
             ...this.state,
             notes: x
         }));
