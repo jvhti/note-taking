@@ -91,7 +91,10 @@ class NoteMain extends React.Component{
     updateNoteTitle(ev){
         this.setState({
             ...this.state,
-            noteTitle: ev.target.value
+            note: {
+                ...this.state.note,
+                title: ev.target.value
+            }
         });
     }
 
