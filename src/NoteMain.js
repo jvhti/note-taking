@@ -4,6 +4,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import MediaQuery from 'react-responsive';
 import MarkdownIt from 'markdown-it';
 import "../node_modules/github-markdown-css/github-markdown.css";
+import PubSub from 'pubsub-js';
 
 // eslint-disable-next-line
 const sampleText = "# 1\n" + "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +   "## 2\n" +    "### 3\n" +    "\n";
@@ -41,14 +42,32 @@ class NoteMain extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            "isEditing": true,
-            noteTitle: "",
-            noteText: sampleText
+            isEditing: true,
+            note: {
+                title: "",
+                body: sampleText
+            }
         };
 
         this.switchMode = this.switchMode.bind(this);
         this.updateNoteText = this.updateNoteText.bind(this);
         this.updateNoteTitle = this.updateNoteTitle.bind(this);
+        this.changeNote =  this.changeNote.bind(this);
+    }
+
+    changeNote(message, x){
+        this.setState({
+            ...this.state,
+            note: x
+        });
+    }
+
+    componentDidMount() {
+        this.changeNoteSubscribeToken = PubSub.subscribe("ChangeNote", this.changeNote);
+    }
+
+    componentWillUnmount() {
+        PubSub.unsubscribe(this.changeNoteSubscribeToken);
     }
 
     switchMode(){
@@ -58,7 +77,10 @@ class NoteMain extends React.Component{
     updateNoteText(ev){
         this.setState({
             ...this.state,
-            noteText: ev.target.value
+            note: {
+                ...this.state.note,
+                body: ev.target.value
+            }
         });
     }
 
@@ -70,13 +92,13 @@ class NoteMain extends React.Component{
     }
 
     render() {
-        const noteEditor = <NoteEditor text={this.state.noteText} updateNoteText={this.updateNoteText}/>;
-        const noteViewer = <NoteViewer text={this.state.noteText}/>;
+        const noteEditor = <NoteEditor text={this.state.note.body} updateNoteText={this.updateNoteText}/>;
+        const noteViewer = <NoteViewer text={this.state.note.body}/>;
         return (
             <main className="note_main">
                 <div className="note_main__title">
                     <input className="sidebar__options__search_bar" type="text" placeholder="Name your note..."
-                           value={this.state.noteTitle} onChange={this.updateNoteTitle}/>
+                           value={this.state.note.title} onChange={this.updateNoteTitle}/>
                 </div>
                 <div className="note_main__wrapper">
                     <MediaQuery minWidth="1000px">

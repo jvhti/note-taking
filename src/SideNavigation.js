@@ -2,6 +2,7 @@ import React from "react";
 import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import NoteManager from "./NoteManager";
+import PubSub from 'pubsub-js';
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -16,10 +17,10 @@ function NotesListItemOptions({left, top, display, events}) {
 
 function NotesListItem(props) {
     return (
-        <li className="notes_list__item" tabIndex="0">
+        <li className="notes_list__item" tabIndex="0" onClick={props.onClick}>
             <div className="notes_list__item__header">
                 <span className="notes_list__item__header__title">{props.title}</span>
-                <button className="notes_list__item__header__options" onClick={(ev) => {props.onOpenOptions(ev);}}>
+                <button className="notes_list__item__header__options" onClick={props.onOpenOptions}>
                     <FontAwesomeIcon icon="ellipsis-h"/><span className="sr-only">Options for note Title of the Note</span>
                 </button>
             </div>
@@ -109,13 +110,19 @@ class NotesList extends React.Component {
     onOptionsPrint(ev){console.log("PRINT", ev);}
     onOptionsShare(ev){console.log("SHARE", ev);}
 
+    openNote(key){
+        NoteManager.database.get(key).then((x) => {
+            PubSub.publish("ChangeNote", x);
+        });
+    }
+
     render() {
         return (
             <React.Fragment>
                 <ul className="notes_list">
                     { this.state.notes.map((note) =>
                         <NotesListItem key={note.id} onOpenOptions={this.openOptions.bind(this, note.id)}
-                                       title={note.title} body={note.body}/>)}
+                                       title={note.title} body={note.body} onClick={this.openNote.bind(this, note.id)}/>)}
                 </ul>
                 <NotesListItemOptions events={{
                     onDelete: this.onOptionsDelete,
