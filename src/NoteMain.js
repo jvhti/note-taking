@@ -5,10 +5,7 @@ import MediaQuery from 'react-responsive';
 import MarkdownIt from 'markdown-it';
 import "../node_modules/github-markdown-css/github-markdown.css";
 import PubSub from 'pubsub-js';
-
-// eslint-disable-next-line
-const sampleText = "# 1\n" + "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +    "## 2\n" +    "### 3\n" +    "# 1\n" +   "## 2\n" +    "### 3\n" +    "\n";
-
+import NoteManager from './NoteManager';
 
 function ModeSwitchButton({ onSwitch, state }) {
     const isReadState = state === "read";
@@ -45,7 +42,7 @@ class NoteMain extends React.Component{
             isEditing: true,
             note: {
                 title: "",
-                body: sampleText
+                body: ""
             }
         };
 
@@ -55,15 +52,22 @@ class NoteMain extends React.Component{
         this.changeNote =  this.changeNote.bind(this);
     }
 
-    changeNote(message, x){
+    _changeNote(note) {
         this.setState({
             ...this.state,
-            note: x
+            note
         });
+    }
+
+    changeNote(message, note){
+        if(message !== "ChangeNote") return;
+
+        this._changeNote(note);
     }
 
     componentDidMount() {
         this.changeNoteSubscribeToken = PubSub.subscribe("ChangeNote", this.changeNote);
+        NoteManager.database.get(1).then((note) => {this._changeNote(note);});
     }
 
     componentWillUnmount() {
