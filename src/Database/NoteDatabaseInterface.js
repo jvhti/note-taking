@@ -1,16 +1,17 @@
 import Note from "./Note";
+import {List} from "immutable";
 
 export default class NoteDatabaseInterface{
     notes;
 
     constructor(){
-        this.notes = [];
+        this.notes = List();
 
         const n = new Note(1, "Test", "This is a text of a test is a text of a test");
         const n2 = new Note(2, "Note", "This is a text of a test");
 
-        this.notes.push(n);
-        this.notes.push(n2);
+        this.notes = this.notes.push(n);
+        this.notes = this.notes.push(n2);
     }
 
     getList(titleFilter){
@@ -30,8 +31,9 @@ export default class NoteDatabaseInterface{
                 notes = notes.filter(x => x.title.toLowerCase().includes(titleFilter.toLowerCase()));
 
             resolve(notes.map(x => {
-                x.body = truncate.apply(x.body, [30, true]);
-                return x;
+                let xCopy =  Object.assign(Object.create(Object.getPrototypeOf(x)), x);
+                xCopy.body = truncate.apply(xCopy.body, [30, true]);
+                return xCopy;
             }));
         }));
     }
