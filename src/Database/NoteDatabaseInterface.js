@@ -41,4 +41,21 @@ export default class NoteDatabaseInterface{
     get(id){
         return new Promise((resolve => resolve(this.notes.find(x => x.id === id))));
     }
+
+    save(noteObj) {
+        return new Promise((resolve, reject) => {
+            if (!noteObj) {
+                return reject({err: "Trying to save a invalid note object.", note: noteObj});
+            }
+
+            if (!noteObj.id) {
+                return reject({err: "Trying to save a note without ID.", note: noteObj});
+            }
+
+            const indexOf = this.notes.map(x => x.id).indexOf(noteObj.id);
+            this.notes = this.notes.set(indexOf, noteObj);
+
+            resolve();
+        });
+    }
 }
