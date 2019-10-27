@@ -1,7 +1,7 @@
 export default class Note{
     constructor(id, title, body, creationDate){
-        this._id = id;
-        this._title = title;
+        this._id = id || null;
+        this._title = title || "";
         this._body = body || "";
         this._creationDate = creationDate || new Date();
     }
