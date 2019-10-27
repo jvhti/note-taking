@@ -7,6 +7,7 @@ import "../node_modules/github-markdown-css/github-markdown.css";
 import PubSub from 'pubsub-js';
 import NoteManager from './NoteManager';
 import Note from './Database/Note';
+import {getObjectCopy} from "./Utils";
 
 function ModeSwitchButton({ onSwitch, state }) {
     const isReadState = state === "read";
@@ -84,8 +85,10 @@ class NoteMain extends React.Component{
         this.setState({"isEditing": !this.state.isEditing});
     }
 
+
+
     updateNoteText(ev){
-        let newNote = Object.assign(Object.create(Object.getPrototypeOf(this.state.note)), this.state.note);
+        let newNote = getObjectCopy(this.state.note);
         newNote.body = ev.target.value;
 
         this.setState({

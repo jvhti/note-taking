@@ -1,5 +1,6 @@
 import Note from "./Note";
 import {List} from "immutable";
+import {getObjectCopy, truncate} from "../Utils";
 
 export default class NoteDatabaseInterface{
     notes;
@@ -15,15 +16,6 @@ export default class NoteDatabaseInterface{
     }
 
     getList(titleFilter){
-        // https://stackoverflow.com/questions/1199352/smart-way-to-truncate-long-strings
-        const truncate = function(n, useWordBoundary){
-            if (this.length <= n) { return this; }
-            var subString = this.substr(0, n-1);
-            return (useWordBoundary
-                ? subString.substr(0, subString.lastIndexOf(' '))
-                : subString) + "...";
-        };
-
         return new Promise((resolve => {
             let notes = this.notes;
 
@@ -31,7 +23,7 @@ export default class NoteDatabaseInterface{
                 notes = notes.filter(x => x.title.toLowerCase().includes(titleFilter.toLowerCase()));
 
             resolve(notes.map(x => {
-                let xCopy =  Object.assign(Object.create(Object.getPrototypeOf(x)), x);
+                let xCopy =  getObjectCopy(x);
                 xCopy.body = truncate.apply(xCopy.body, [30, true]);
                 return xCopy;
             }));
