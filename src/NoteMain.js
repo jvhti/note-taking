@@ -6,6 +6,7 @@ import MarkdownIt from 'markdown-it';
 import "../node_modules/github-markdown-css/github-markdown.css";
 import PubSub from 'pubsub-js';
 import NoteManager from './NoteManager';
+import Note from './Database/Note';
 
 function ModeSwitchButton({ onSwitch, state }) {
     const isReadState = state === "read";
@@ -40,16 +41,14 @@ class NoteMain extends React.Component{
         super(props);
         this.state = {
             isEditing: true,
-            note: {
-                title: "",
-                body: ""
-            }
+            note: new Note()
         };
 
         this.switchMode = this.switchMode.bind(this);
         this.updateNoteText = this.updateNoteText.bind(this);
         this.updateNoteTitle = this.updateNoteTitle.bind(this);
         this.changeNote =  this.changeNote.bind(this);
+        this.saveNote = this.saveNote.bind(this);
     }
 
     _changeNote(note) {
@@ -61,6 +60,13 @@ class NoteMain extends React.Component{
 
     changeNote(message, note){
         if(message !== "ChangeNote") return;
+
+        // If there is a save timer waiting, cancel and execute immediately
+        if(this._saveNoteTimer){
+            clearTimeout(this._saveNoteTimer);
+            this._saveNoteTimer = null;
+            this.saveNote();
+        }
 
         this._changeNote(note);
     }
@@ -79,13 +85,15 @@ class NoteMain extends React.Component{
     }
 
     updateNoteText(ev){
+        let newNote = Object.assign(Object.create(Object.getPrototypeOf(this.state.note)), this.state.note);
+        newNote.body = ev.target.value;
+
         this.setState({
             ...this.state,
-            note: {
-                ...this.state.note,
-                body: ev.target.value
-            }
+            note: newNote
         });
+
+        this.startSaveTimer();
     }
 
     updateNoteTitle(ev){
@@ -98,7 +106,29 @@ class NoteMain extends React.Component{
         });
     }
 
+
+    saveNote() {
+        console.log("save");
+        this._saveNoteTimer = null;
+        NoteManager.database.save(this.state.note);
+    }
+
+    startSaveTimer() {
+        // Check if the timer exists, if it does, clear and reset
+        if(this._saveNoteTimer){
+            clearTimeout(this._saveNoteTimer);
+            this._saveNoteTimer = null;
+        }
+
+        this._saveNoteTimer = setTimeout(this.saveNote, 750);
+    }
+
     render() {
+        if(!this.state.note) {
+            // ToDo: Return a loading indicator
+            return;
+        }
+
         const noteEditor = <NoteEditor text={this.state.note.body} updateNoteText={this.updateNoteText}/>;
         const noteViewer = <NoteViewer text={this.state.note.body}/>;
         return (
