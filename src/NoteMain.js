@@ -115,7 +115,20 @@ class NoteMain extends React.Component{
     saveNote() {
         console.log("save");
         this._saveNoteTimer = null;
-        NoteManager.database.save(this.state.note);
+        NoteManager.database.save(this.state.note).then((newNote) => {
+            // if returns a new note, it means that the note was added to the database
+            if(newNote){
+                // I only copy the generated ID from the newNote, since this is a asynchronous
+                // function, the current note can be newer (with editions).
+                const stateNote = this.state.note;
+                const note = new Note(newNote.id, stateNote.title, stateNote.body, stateNote.creationDate);
+
+                this.setState({
+                    ...this.state,
+                    note
+                });
+            }
+        });
 
         PubSub.publish("ReloadSideNavNotes");
     }

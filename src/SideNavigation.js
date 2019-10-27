@@ -3,6 +3,7 @@ import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import NoteManager from "./NoteManager";
 import PubSub from 'pubsub-js';
+import Note from "./Database/Note";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -161,6 +162,7 @@ class SideNavigation extends React.Component {
         this.state = {searchValue: ""};
 
         this.updateSearchValue = this.updateSearchValue.bind(this);
+        this.createNewNote = this.createNewNote.bind(this);
     }
 
     updateSearchValue(ev){
@@ -170,13 +172,17 @@ class SideNavigation extends React.Component {
         });
     }
 
+    createNewNote() {
+        PubSub.publish("ChangeNote", new Note());
+    }
+
     render() {
         return (
             <aside className="sidebar">
                 <div className="sidebar__options">
                     <input className="sidebar__options__search_bar" type="search" placeholder="Search Notes"
                            value={this.state.searchValue} onChange={this.updateSearchValue}/>
-                    <button className="sidebar__options__new_note"><FontAwesomeIcon icon="file-alt"/><span
+                    <button className="sidebar__options__new_note" onClick={this.createNewNote}><FontAwesomeIcon icon="file-alt"/><span
                         className="sr-only">Create new note</span></button>
                 </div>
                 <hr className="sidebar__separator"/>
