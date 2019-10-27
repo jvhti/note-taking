@@ -100,13 +100,15 @@ class NoteMain extends React.Component{
     }
 
     updateNoteTitle(ev){
+        let newNote = getObjectCopy(this.state.note);
+        newNote.title = ev.target.value;
+
         this.setState({
             ...this.state,
-            note: {
-                ...this.state.note,
-                title: ev.target.value
-            }
+            note: newNote
         });
+
+        this.startSaveTimer();
     }
 
 
