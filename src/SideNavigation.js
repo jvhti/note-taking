@@ -118,7 +118,18 @@ class NotesList extends React.Component {
     onOptionsPrint(ev){console.log("PRINT", ev);}
     onOptionsShare(ev){console.log("SHARE", ev);}
 
-    openNote(key){
+    openNote(key, ev){
+        // Checks if this click is for the Note Options button or the Note
+        let parent = ev.target;
+
+        do {
+            parent = parent.parentElement;
+
+            if(parent != null && parent.classList.contains("notes_list__item")) parent = null;
+        }while (parent != null && !parent.classList.contains("notes_list__item__header__options"));
+
+        if(parent != null) return;
+
         NoteManager.database.get(key).then((x) => {
             PubSub.publish("ChangeNote", x);
         });
