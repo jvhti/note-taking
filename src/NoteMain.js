@@ -116,6 +116,8 @@ class NoteMain extends React.Component{
         console.log("save");
         this._saveNoteTimer = null;
         NoteManager.database.save(this.state.note);
+
+        PubSub.publish("ReloadSideNavNotes");
     }
 
     startSaveTimer() {

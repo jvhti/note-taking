@@ -56,6 +56,12 @@ class NotesList extends React.Component {
 
     componentDidMount() {
         this.updateList();
+
+        this.reloadNotesSubscribeToken = PubSub.subscribe("ReloadSideNavNotes", (message) => {
+            if(message !== "ReloadSideNavNotes") return;
+
+            this.updateList();
+        });
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -104,6 +110,8 @@ class NotesList extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener("click", this.closeOptions);
+        if(this.reloadNotesSubscribeToken)
+            PubSub.unsubscribe(this.reloadNotesSubscribeToken);
     }
 
     onOptionsDelete(ev){console.log("DELETE", ev);}
