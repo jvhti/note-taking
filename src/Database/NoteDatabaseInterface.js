@@ -62,4 +62,16 @@ export default class NoteDatabaseInterface{
             resolve();
         });
     }
+
+    delete(id) {
+        return new Promise((resolve, reject) => {
+            const indexOf = this.notes.map(x => x.id).indexOf(id);
+
+            if (indexOf === -1)
+                return reject({err: "ID not found", id});
+
+            this.notes = this.notes.remove(indexOf);
+            resolve();
+        });
+    }
 }

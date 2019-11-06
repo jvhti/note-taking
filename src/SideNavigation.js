@@ -46,6 +46,8 @@ class NotesList extends React.Component {
 
         this.closeOptions = this.closeOptions.bind(this);
         this.updateList = this.updateList.bind(this);
+
+        this.onOptionsDelete = this.onOptionsDelete.bind(this);
     }
 
     updateList(){
@@ -115,7 +117,22 @@ class NotesList extends React.Component {
             PubSub.unsubscribe(this.reloadNotesSubscribeToken);
     }
 
-    onOptionsDelete(ev){console.log("DELETE", ev);}
+    onOptionsDelete(){
+        const key = this.state.options.id;
+        if(!key){
+            console.error("Called DELETE menu option without an Option ID");
+            return;
+        }
+
+        Promise.all([
+            NoteManager.database.delete(key),
+            NoteManager.database.get(1)
+        ]).then((res) => {
+            PubSub.publish("ReloadSideNavNotes");
+            PubSub.publish("ChangeNote", res[1] ? res[1] : new Note());
+        });
+    }
+
     onOptionsPrint(ev){console.log("PRINT", ev);}
     onOptionsShare(ev){console.log("SHARE", ev);}
 
