@@ -124,13 +124,10 @@ class NotesList extends React.Component {
             return;
         }
 
-        Promise.all([
-            NoteManager.database.delete(key),
-            NoteManager.database.get(1)
-        ]).then((res) => {
-            PubSub.publish("ReloadSideNavNotes");
-            PubSub.publish("ChangeNote", res[1] ? res[1] : new Note());
-        });
+        NoteManager.database.delete(key)
+            .then(() => { PubSub.publish("ReloadSideNavNotes"); })
+            .then(() => { return NoteManager.database.get(1); })
+            .then((x) => { PubSub.publish("ChangeNote", x ? x : new Note()); })
     }
 
     onOptionsPrint(ev){console.log("PRINT", ev);}
