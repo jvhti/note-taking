@@ -47,8 +47,8 @@ export default class NoteDatabaseInterface{
 
             // Check if needs to add or update the note
             if (!noteObj.id) {
-                const nextID = this.notes.last().id + 1;
-                const newNote = new Note(nextID, noteObj.title, noteObj.body, noteObj.creationDate)
+                const nextID = (this.notes.length ? this.notes.last().id : 0) + 1;
+                const newNote = new Note(nextID, noteObj.title, noteObj.body, noteObj.creationDate);
                 this.notes = this.notes.push(newNote);
                 return resolve(newNote);
             }else {
