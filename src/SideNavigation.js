@@ -5,6 +5,7 @@ import NoteManager from "./NoteManager";
 import PubSub from 'pubsub-js';
 import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
+import MarkdownIt from 'markdown-it';
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -51,6 +52,7 @@ class NotesList extends React.Component {
 
         this.onOptionsDelete = this.onOptionsDelete.bind(this);
         this.onOptionsDuplicate = this.onOptionsDuplicate.bind(this);
+        this.onOptionsShare = this.onOptionsShare.bind(this);
     }
 
     updateList(){
@@ -147,7 +149,48 @@ class NotesList extends React.Component {
     }
 
     onOptionsPrint(ev){console.log("PRINT", ev);}
-    onOptionsShare(ev){console.log("SHARE", ev);}
+
+    onOptionsShare(ev){
+        const key = this.state.options.id;
+        if(!key){
+            console.error("Called SHARE menu option without an Option ID");
+            return;
+        }
+
+        const shareModal = new ModalFactory()
+            .setTitle("Share Options")
+            .setDescription(["How do you want to share?"])
+            .addOption('E-mail', () => {
+                NoteManager.database.get(key).then((n) => {
+                    window.open(`mailto:?Subject=${encodeURI(n.title)}&Body=${encodeURI(n.body)}`, '_blank');
+                });
+            }, 'modal__options__option--block')
+            .addOption('Clipboard Markdown', () => {
+                NoteManager.database.get(key).then((n) => {
+                    // From: https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
+                    const el = document.createElement('textarea');
+                    el.value = n.body;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                });
+            }, 'modal__options__option--block')
+            .addOption('Clipboard HTML', () => {
+                NoteManager.database.get(key).then((n) => {
+                    // From: https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
+                    const el = document.createElement('textarea');
+                    el.value = MarkdownIt().render(n.body);
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                });
+            }, 'modal__options__option--block')
+            .build();
+
+        PubSub.publish('OpenModal', shareModal);
+    }
 
     onOptionsDuplicate(ev){
         const key = this.state.options.id;
