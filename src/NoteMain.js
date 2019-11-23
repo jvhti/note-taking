@@ -74,7 +74,7 @@ class NoteMain extends React.Component{
 
     componentDidMount() {
         this.changeNoteSubscribeToken = PubSub.subscribe("ChangeNote", this.changeNote);
-        NoteManager.database.get(1).then((note) => {this._changeNote(note);});
+        NoteManager.database.getFirst().then((note) => {this._changeNote(note);});
     }
 
     componentWillUnmount() {
@@ -146,7 +146,7 @@ class NoteMain extends React.Component{
     render() {
         if(!this.state.note) {
             // ToDo: Return a loading indicator
-            return;
+            return null;
         }
 
         const noteEditor = <NoteEditor text={this.state.note.body} updateNoteText={this.updateNoteText}/>;
