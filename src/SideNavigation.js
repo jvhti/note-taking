@@ -132,11 +132,9 @@ class NotesList extends React.Component {
 
         const note = this.state.notes.find((x) => x.id === key);
 
-        const description = `Are you sure that you want to delete the '${note.title}' note?`;
-
         const deleteModal = new ModalFactory()
             .setTitle("Deletion Confirmation")
-            .setDescription([description])
+            .setDescription([`Are you sure that you want to delete the '${note.title}' note?`])
             .addOption('Yes', () => {
                 NoteManager.database.delete(key)
                     .then(() => { PubSub.publish("ReloadSideNavNotes"); })
@@ -155,8 +153,6 @@ class NotesList extends React.Component {
             console.error("Called DUPLICATE menu option without an Option ID");
             return;
         }
-
-        const note = this.state.notes.find((x) => x.id === key);
 
         const printModal = new ModalFactory()
             .setTitle("Print Confirmation")
@@ -225,16 +221,19 @@ class NotesList extends React.Component {
 
         const note = this.state.notes.find((x) => x.id === key);
 
-        const description = `Are you sure that you want to duplicate the '${note.title}' note?`;
-
         const duplicationModal = new ModalFactory()
             .setTitle("Duplication Confirmation")
-            .setDescription([description])
+            .setDescription([`Are you sure that you want to duplicate the '${note.title}' note?`])
             .addOption('Yes', () => {
-                const duplicatedNote = new Note(null, note.title, note.body);
+                NoteManager.database.get(key).then((n) => {
+                    const duplicatedNote = new Note(null, n.title, n.body);
 
-                NoteManager.database.save(duplicatedNote)
-                    .then((x) => { PubSub.publish("ChangeNote", x); PubSub.publish("ReloadSideNavNotes"); });
+                    NoteManager.database.save(duplicatedNote)
+                        .then((x) => {
+                            PubSub.publish("ChangeNote", x);
+                            PubSub.publish("ReloadSideNavNotes");
+                        });
+                });
             }, 'modal__options__option--block')
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
