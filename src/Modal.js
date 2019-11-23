@@ -2,7 +2,6 @@ import React from "react";
 import "./scss/Modal.scss";
 
 function Modal({ title, description, options, style }) {
-    console.log(title, description, options);
     return(
         <div className="modal" role="dialog" style={style}>
             <div className="modal__header">{title}</div>
