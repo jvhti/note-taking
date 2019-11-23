@@ -6,6 +6,7 @@ import PubSub from 'pubsub-js';
 import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
+import {copyToClipboard} from "./Utils";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -186,26 +187,10 @@ class NotesList extends React.Component {
                 });
             }, 'modal__options__option--block')
             .addOption('Clipboard Markdown', () => {
-                NoteManager.database.get(key).then((n) => {
-                    // From: https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
-                    const el = document.createElement('textarea');
-                    el.value = n.body;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                });
+                NoteManager.database.get(key).then((n) => copyToClipboard(n.body) );
             }, 'modal__options__option--block')
             .addOption('Clipboard HTML', () => {
-                NoteManager.database.get(key).then((n) => {
-                    // From: https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
-                    const el = document.createElement('textarea');
-                    el.value = MarkdownIt().render(n.body);
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                });
+                NoteManager.database.get(key).then((n) => copyToClipboard(MarkdownIt().render(n.body)));
             }, 'modal__options__option--block')
             .build();
 
