@@ -13,6 +13,7 @@ function NotesListItemOptions({left, top, display, events}) {
             <li onClick={events.onDelete} className="notes_list__item__options_wrapper__option"><a href="#">Delete</a></li>
             <li onClick={events.onPrint} className="notes_list__item__options_wrapper__option"><a href="#">Print</a></li>
             <li onClick={events.onShare} className="notes_list__item__options_wrapper__option"><a href="#">Share</a></li>
+            <li onClick={events.onDuplicate} className="notes_list__item__options_wrapper__option"><a href="#">Duplicate</a></li>
         </ul>
     );
 }
@@ -49,6 +50,7 @@ class NotesList extends React.Component {
         this.updateList = this.updateList.bind(this);
 
         this.onOptionsDelete = this.onOptionsDelete.bind(this);
+        this.onOptionsDuplicate = this.onOptionsDuplicate.bind(this);
     }
 
     updateList(){
@@ -147,6 +149,32 @@ class NotesList extends React.Component {
     onOptionsPrint(ev){console.log("PRINT", ev);}
     onOptionsShare(ev){console.log("SHARE", ev);}
 
+    onOptionsDuplicate(ev){
+        const key = this.state.options.id;
+        if(!key){
+            console.error("Called DUPLICATE menu option without an Option ID");
+            return;
+        }
+
+        const note = this.state.notes.find((x) => x.id === key);
+
+        const description = `Are you sure that you want to duplicate the '${note.title}' note?`;
+
+        const duplicationModal = new ModalFactory()
+            .setTitle("Duplication Confirmation")
+            .setDescription([description])
+            .addOption('Yes', () => {
+                const duplicatedNote = new Note(null, note.title, note.body);
+
+                NoteManager.database.save(duplicatedNote)
+                    .then((x) => { PubSub.publish("ChangeNote", x); PubSub.publish("ReloadSideNavNotes"); });
+            }, 'modal__options__option--block')
+            .addOption('No', () => {}, 'modal__options__option--block')
+            .build();
+
+        PubSub.publish('OpenModal', duplicationModal);
+    }
+
     openNote(key, ev){
         // Checks if this click is for the Note Options button or the Note
         let parent = ev.target;
@@ -175,7 +203,8 @@ class NotesList extends React.Component {
                 <NotesListItemOptions events={{
                     onDelete: this.onOptionsDelete,
                     onPrint: this.onOptionsPrint,
-                    onShare: this.onOptionsShare
+                    onShare: this.onOptionsShare,
+                    onDuplicate: this.onOptionsDuplicate
                 }} display={this.state.options.display} left={this.state.options.x} top={this.state.options.y}/>
                 {/* Can pick left and top offset from ev.pageX and ev.pageY */}
             </React.Fragment>
