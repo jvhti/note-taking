@@ -7,6 +7,8 @@ import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
 import {copyToClipboard} from "./Utils";
+import {changeNote} from "./Actions";
+import {connect} from "react-redux";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -140,7 +142,7 @@ class NotesList extends React.Component {
                 NoteManager.database.delete(key)
                     .then(() => { PubSub.publish("ReloadSideNavNotes"); })
                     .then(() => { return NoteManager.database.get(1); })
-                    .then((x) => { PubSub.publish("ChangeNote", x || new Note()); })
+                    .then((x) => { this.props.updateCurrentNoteDispatcher( x || new Note()); })
             }, 'modal__options__option--block')
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
@@ -148,7 +150,7 @@ class NotesList extends React.Component {
         PubSub.publish('OpenModal', deleteModal);
     }
 
-    onOptionsPrint(ev){
+    onOptionsPrint(){
         const key = this.state.options.id;
         if(!key){
             console.error("Called DUPLICATE menu option without an Option ID");
@@ -171,7 +173,7 @@ class NotesList extends React.Component {
         PubSub.publish('OpenModal', printModal);
     }
 
-    onOptionsShare(ev){
+    onOptionsShare(){
         const key = this.state.options.id;
         if(!key){
             console.error("Called SHARE menu option without an Option ID");
@@ -197,7 +199,7 @@ class NotesList extends React.Component {
         PubSub.publish('OpenModal', shareModal);
     }
 
-    onOptionsDuplicate(ev){
+    onOptionsDuplicate(){
         const key = this.state.options.id;
         if(!key){
             console.error("Called DUPLICATE menu option without an Option ID");
@@ -215,7 +217,7 @@ class NotesList extends React.Component {
 
                     NoteManager.database.save(duplicatedNote)
                         .then((x) => {
-                            PubSub.publish("ChangeNote", x);
+                            this.props.updateCurrentNoteDispatcher(x);
                             PubSub.publish("ReloadSideNavNotes");
                         });
                 });
@@ -239,7 +241,7 @@ class NotesList extends React.Component {
         if(parent != null) return;
 
         NoteManager.database.get(key).then((x) => {
-            PubSub.publish("ChangeNote", x);
+            this.props.updateCurrentNoteDispatcher(x);
         });
     }
 
@@ -281,7 +283,7 @@ class SideNavigation extends React.Component {
     }
 
     createNewNote() {
-        PubSub.publish("ChangeNote", new Note());
+        this.props.updateCurrentNoteDispatcher(new Note());
     }
 
     render() {
@@ -294,10 +296,20 @@ class SideNavigation extends React.Component {
                         className="sr-only">Create new note</span></button>
                 </div>
                 <hr className="sidebar__separator"/>
-                <NotesList filterByTitle={this.state.searchValue}/>
+                <NotesList updateCurrentNoteDispatcher={this.props.updateCurrentNoteDispatcher} filterByTitle={this.state.searchValue}/>
             </aside>
         );
     }
 }
 
-export default SideNavigation;
+
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        updateCurrentNoteDispatcher: (note) => {
+            dispatch(changeNote(note))
+        }
+    }
+};
+
+export default connect(null, mapDispatchToProps)(SideNavigation);

@@ -5,6 +5,8 @@ import NoteMain from "./NoteMain";
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {faEdit, faEllipsisH, faFileAlt, faGlasses} from '@fortawesome/free-solid-svg-icons';
 import ModalManager from "./ModalManager";
+import {Provider} from "react-redux";
+import Store from "./Store";
 
 library.add(faFileAlt);
 library.add(faEllipsisH);
@@ -14,11 +16,13 @@ library.add(faEdit);
 function App() {
 
   return (
-    <div className="App">
-        <SideNavigation/>
-        <NoteMain/>
-        <ModalManager/>
-    </div>
+      <Provider store={Store}>
+        <div className="App">
+            <SideNavigation/>
+            <NoteMain/>
+            <ModalManager/>
+        </div>
+      </Provider>
   );
 }
 
