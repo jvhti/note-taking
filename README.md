@@ -11,8 +11,8 @@ I'm still developing this project. Those are the nexts steps:
 1. ~~SideNav Context Menu > Duplicate Note~~
 2. ~~SideNav Context Menu > Share Note~~
 3. ~~SideNav Context Menu > Print Note (if viable?)~~
-4. Implement a LocalStorage Database Driver
-5. Implement a IndexedDB Database Driver
+4. ~~Implement a LocalStorage Database Driver~~
+5. Implement an IndexedDB Database Driver
 6. Write tests
 7. Check/Improve accessibility
 8. Use redux (remove PubSub)

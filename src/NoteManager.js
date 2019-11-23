@@ -1,9 +1,9 @@
-import NoteDatabaseInterface from "./Database/NoteDatabaseInterface";
+import NoteLocalStorageDatabase from "./Database/NoteLocalStorageDatabase";
 
 class NoteManager{
     constructor(){
         if(!NoteManager.instance){
-            this._database = new NoteDatabaseInterface();
+            this._database = new NoteLocalStorageDatabase();
 
             NoteManager.instance = this;
         }
