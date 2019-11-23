@@ -53,6 +53,7 @@ class NotesList extends React.Component {
         this.onOptionsDelete = this.onOptionsDelete.bind(this);
         this.onOptionsDuplicate = this.onOptionsDuplicate.bind(this);
         this.onOptionsShare = this.onOptionsShare.bind(this);
+        this.onOptionsPrint = this.onOptionsPrint.bind(this);
     }
 
     updateList(){
@@ -148,7 +149,30 @@ class NotesList extends React.Component {
         PubSub.publish('OpenModal', deleteModal);
     }
 
-    onOptionsPrint(ev){console.log("PRINT", ev);}
+    onOptionsPrint(ev){
+        const key = this.state.options.id;
+        if(!key){
+            console.error("Called DUPLICATE menu option without an Option ID");
+            return;
+        }
+
+        const note = this.state.notes.find((x) => x.id === key);
+
+        const printModal = new ModalFactory()
+            .setTitle("Print Confirmation")
+            .setDescription(["Are you sure that you want to print this note?"])
+            .addOption('Yes', () => {
+                NoteManager.database.get(key).then((n) => {
+                    const printWindow = window.open("", "_blank");
+                    printWindow.document.write(`<h1>${n.title}</h1> <br/>` + MarkdownIt().render(n.body) + `<script>window.stop(); window.print(); window.close();</script>`);
+                });
+
+                }, 'modal__options__option--block')
+            .addOption('No', () => {}, 'modal__options__option--block')
+            .build();
+
+        PubSub.publish('OpenModal', printModal);
+    }
 
     onOptionsShare(ev){
         const key = this.state.options.id;
