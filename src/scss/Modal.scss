@@ -46,6 +46,8 @@
   &__options{
     $paddingTop: 16px;
     padding-top: $paddingTop;
+    display: flex;
+
     &::before{
       @include modalSeparator(($paddingTop * -1) - 1);
     }

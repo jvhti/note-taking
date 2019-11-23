@@ -15,7 +15,6 @@ function App() {
     <div className="App">
         <SideNavigation/>
         <NoteMain/>
-        {/*<Modal/>*/}
     </div>
   );
 }
