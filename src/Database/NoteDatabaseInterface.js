@@ -5,12 +5,6 @@ import {getObjectCopy, truncate} from "../Utils";
 export default class NoteDatabaseInterface{
     constructor(){
         this.notes = List();
-
-        const n = new Note(1, "Test", "This is a text of a test is a text of a test");
-        const n2 = new Note(2, "Note", "This is a text of a test");
-
-        this.notes = this.notes.push(n);
-        this.notes = this.notes.push(n2);
     }
 
     getList(titleFilter){
@@ -33,6 +27,10 @@ export default class NoteDatabaseInterface{
         }));
     }
 
+    getFirst(){
+        return new Promise((resolve => resolve(this.notes.first())));
+    }
+
     get(id){
         return new Promise((resolve => resolve(this.notes.find(x => x.id === id))));
     }
@@ -48,6 +46,9 @@ export default class NoteDatabaseInterface{
                 const nextID = (this.notes ? this.notes.last().id : 0) + 1;
                 const newNote = new Note(nextID, noteObj.title, noteObj.body, noteObj.creationDate);
                 this.notes = this.notes.push(newNote);
+
+                if(typeof this._postSave === 'function') this._postSave();
+
                 return resolve(newNote);
             }else {
                 const indexOf = this.notes.map(x => x.id).indexOf(noteObj.id);
@@ -57,6 +58,7 @@ export default class NoteDatabaseInterface{
 
                 this.notes = this.notes.set(indexOf, noteObj);
             }
+            if(typeof this._postSave === 'function') this._postSave();
             resolve();
         });
     }
@@ -69,6 +71,7 @@ export default class NoteDatabaseInterface{
                 return reject({err: "ID not found", id});
 
             this.notes = this.notes.remove(indexOf);
+            if(typeof this._postSave === 'function') this._postSave();
             resolve();
         });
     }
