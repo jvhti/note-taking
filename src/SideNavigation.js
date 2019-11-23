@@ -4,6 +4,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import NoteManager from "./NoteManager";
 import PubSub from 'pubsub-js';
 import Note from "./Database/Note";
+import ModalFactory from "./Factories/ModalFactory";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -124,10 +125,23 @@ class NotesList extends React.Component {
             return;
         }
 
-        NoteManager.database.delete(key)
-            .then(() => { PubSub.publish("ReloadSideNavNotes"); })
-            .then(() => { return NoteManager.database.get(1); })
-            .then((x) => { PubSub.publish("ChangeNote", x ? x : new Note()); })
+        const note = this.state.notes.find((x) => x.id === key);
+
+        const description = `Are you sure that you want to delete the '${note.title}' note?`;
+
+        const deleteModal = new ModalFactory()
+            .setTitle("Deletion Confirmation")
+            .setDescription([description])
+            .addOption('Yes', () => {
+                NoteManager.database.delete(key)
+                    .then(() => { PubSub.publish("ReloadSideNavNotes"); })
+                    .then(() => { return NoteManager.database.get(1); })
+                    .then((x) => { PubSub.publish("ChangeNote", x || new Note()); })
+            }, 'modal__options__option--block')
+            .addOption('No', () => {}, 'modal__options__option--block')
+            .build();
+
+        PubSub.publish('OpenModal', deleteModal);
     }
 
     onOptionsPrint(ev){console.log("PRINT", ev);}
