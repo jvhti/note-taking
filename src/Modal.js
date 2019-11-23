@@ -10,6 +10,5 @@ function Modal({ title, description, options, style }) {
         </div>
     );
 }
-{/* <button className="modal__options__option modal__options__option--block">Ok</button> */ }
 
 export default Modal;

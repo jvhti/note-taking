@@ -10,16 +10,17 @@ export default class ModalFactory {
     }
 
     setDescription(description){
-        if(typeof description === "String")
-            this._description = new Array(description.split('\\n'));
-        else
+        if(typeof description === "string") {
+            this._description = [];
+            this._description.push(description.split('\\n'));
+        }else
             this._description = description;
 
         return this;
     }
 
     addOption(name, event, classes, styles){
-        if(typeof this._options === 'undefined') this._options = new Array();
+        if(typeof this._options === 'undefined') this._options = [];
 
         this._options.push(<button key={this._options.length + 1} className={"modal__options__option " + (classes || "")} onClick={(ev) => {event(ev); PubSub.publish("CloseModal");}} style={styles || {}}>{name}</button>);
 
@@ -27,7 +28,7 @@ export default class ModalFactory {
     }
 
     applyStyle(property, value){
-        if(typeof this._style === 'undefined') this._style = new Array();
+        if(typeof this._style === 'undefined') this._style = [];
 
         this._style[property] = value;
 

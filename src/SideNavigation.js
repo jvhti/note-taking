@@ -10,10 +10,10 @@ function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
     return (
         <ul style={style} className="notes_list__item__options_wrapper">
-            <li onClick={events.onDelete} className="notes_list__item__options_wrapper__option"><a href="#">Delete</a></li>
-            <li onClick={events.onPrint} className="notes_list__item__options_wrapper__option"><a href="#">Print</a></li>
-            <li onClick={events.onShare} className="notes_list__item__options_wrapper__option"><a href="#">Share</a></li>
-            <li onClick={events.onDuplicate} className="notes_list__item__options_wrapper__option"><a href="#">Duplicate</a></li>
+            <li onClick={events.onDelete} className="notes_list__item__options_wrapper__option"><button>Delete</button></li>
+            <li onClick={events.onPrint} className="notes_list__item__options_wrapper__option"><button>Print</button></li>
+            <li onClick={events.onShare} className="notes_list__item__options_wrapper__option"><button>Share</button></li>
+            <li onClick={events.onDuplicate} className="notes_list__item__options_wrapper__option"><button>Duplicate</button></li>
         </ul>
     );
 }

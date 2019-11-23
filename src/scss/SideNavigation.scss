@@ -113,12 +113,18 @@ $notesListPadding: 5px;
       box-shadow: 0 1px 8px #eee;
 
       &__option{
-        & > a{
+        & > button{
           text-decoration: none;
           color: #666;
           display: block;
           padding: 8px 15px;
           transition: all 300ms ease-in-out;
+          width: 100%;
+          border: none;
+          background: transparent;
+          font-family: inherit;
+          font-size: inherit;
+          cursor: pointer;
 
           &:hover, &:focus{
             background-color: #eee;
