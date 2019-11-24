@@ -103,16 +103,20 @@ class NotesList extends React.Component {
         this.removeEventListenerCloseOptions();
     }
 
-    onOptionsDelete(){
+    onOptions(name, modalProto){
         const key = this.state.options.id;
         if(!key){
-            console.error("Called DELETE menu option without an Option ID");
+            console.error(`Called ${name} menu option without an Option ID`);
             return;
         }
 
         const note = this.props.notes.find((x) => x.id === key);
 
-        const deleteModal = new ModalFactory(this.props.closeModalDispatcher)
+        this.props.showModalDispatcher(modalProto(note));
+    }
+
+    onOptionsDelete(){
+        const deleteModal = (note) => new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Deletion Confirmation")
             .setDescription([`Are you sure that you want to delete the '${note.title}' note?`])
             .addOption('Yes', () => {
@@ -124,21 +128,15 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        this.props.showModalDispatcher(deleteModal);
+        this.onOptions('DELETE', deleteModal);
     }
 
     onOptionsPrint(){
-        const key = this.state.options.id;
-        if(!key){
-            console.error("Called DUPLICATE menu option without an Option ID");
-            return;
-        }
-
-        const printModal = new ModalFactory(this.props.closeModalDispatcher)
+        const printModal = (note) => new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Print Confirmation")
             .setDescription(["Are you sure that you want to print this note?"])
             .addOption('Yes', () => {
-                NoteManager.database.get(key).then((n) => {
+                NoteManager.database.get(note.id).then((n) => {
                     const printWindow = window.open("", "_blank");
                     printWindow.document.write(`<h1>${n.title}</h1> <br/>` + MarkdownIt().render(n.body) + `<script>window.stop(); window.print(); window.close();</script>`);
                 });
@@ -147,49 +145,35 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        this.props.showModalDispatcher(printModal);
+        this.onOptions('PRINT', printModal);
     }
 
     onOptionsShare(){
-        const key = this.state.options.id;
-        if(!key){
-            console.error("Called SHARE menu option without an Option ID");
-            return;
-        }
-
-        const shareModal = new ModalFactory(this.props.closeModalDispatcher)
+        const shareModal = (note) => new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Share Options")
             .setDescription(["How do you want to share?"])
             .addOption('E-mail', () => {
-                NoteManager.database.get(key).then((n) => {
+                NoteManager.database.get(note.id).then((n) => {
                     window.open(`mailto:?Subject=${encodeURI(n.title)}&Body=${encodeURI(n.body)}`, '_blank');
                 });
             }, 'modal__options__option--block')
             .addOption('Clipboard Markdown', () => {
-                NoteManager.database.get(key).then((n) => copyToClipboard(n.body) );
+                NoteManager.database.get(note.id).then((n) => copyToClipboard(n.body) );
             }, 'modal__options__option--block')
             .addOption('Clipboard HTML', () => {
-                NoteManager.database.get(key).then((n) => copyToClipboard(MarkdownIt().render(n.body)));
+                NoteManager.database.get(note.id).then((n) => copyToClipboard(MarkdownIt().render(n.body)));
             }, 'modal__options__option--block')
             .build();
 
-        this.props.showModalDispatcher(shareModal);
+        this.onOptions('SHARE', shareModal);
     }
 
     onOptionsDuplicate(){
-        const key = this.state.options.id;
-        if(!key){
-            console.error("Called DUPLICATE menu option without an Option ID");
-            return;
-        }
-
-        const note = this.props.notes.find((x) => x.id === key);
-
-        const duplicationModal = new ModalFactory(this.props.closeModalDispatcher)
+        const duplicationModal = (note) => new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Duplication Confirmation")
             .setDescription([`Are you sure that you want to duplicate the '${note.title}' note?`])
             .addOption('Yes', () => {
-                NoteManager.database.get(key).then((n) => {
+                NoteManager.database.get(note.id).then((n) => {
                     const duplicatedNote = new Note(null, n.title, n.body);
 
                     NoteManager.database.save(duplicatedNote)
@@ -202,7 +186,7 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        this.props.showModalDispatcher(duplicationModal);
+        this.onOptions('DUPLICATE', duplicationModal);
     }
 
     openNote(key, ev){
