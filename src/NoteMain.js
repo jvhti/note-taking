@@ -4,8 +4,7 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import MediaQuery from 'react-responsive';
 import MarkdownIt from 'markdown-it';
 import "../node_modules/github-markdown-css/github-markdown.css";
-import NoteManager from './NoteManager';
-import {getObjectCopy} from "./Utils";
+import {updateCurrentNote} from "./Utils";
 import {addNote, changeNote} from './Actions';
 import {connect} from "react-redux";
 
@@ -45,35 +44,12 @@ class NoteMain extends React.Component{
         };
 
         this.switchMode = this.switchMode.bind(this);
-        this.updateNoteText = this.updateNoteText.bind(this);
-        this.updateNoteTitle = this.updateNoteTitle.bind(this);
+
+        this.updateNote = (change) => updateCurrentNote(this.props.note, change, this.props.changeCurrentNoteDispatcher);
     }
 
     switchMode(){
-        this.setState({"isEditing": !this.state.isEditing});
-    }
-
-    updateNote(change){
-        let newNote = getObjectCopy(this.props.note);
-        newNote = Object.assign(newNote, change);
-
-        if(!newNote.id){
-            NoteManager.database.save(newNote).then(x => {
-                this.props.updateNoteDispatcher(x);
-            });
-        }else {
-            NoteManager.startSaveTimer(newNote);
-            this.props.updateNoteDispatcher(newNote);
-        }
-
-    }
-
-    updateNoteText(ev){
-        this.updateNote({body: ev.target.value});
-    }
-
-    updateNoteTitle(ev){
-        this.updateNote({title: ev.target.value});
+        this.setState({isEditing: !this.state.isEditing});
     }
 
     render() {
@@ -82,13 +58,14 @@ class NoteMain extends React.Component{
             return null;
         }
 
-        const noteEditor = <NoteEditor text={this.props.note.body} updateNoteText={this.updateNoteText}/>;
+        const noteEditor = <NoteEditor text={this.props.note.body} updateNoteText={(ev) => this.updateNote({body: ev.target.value})}/>;
         const noteViewer = <NoteViewer text={this.props.note.body}/>;
+
         return (
             <main className="note_main">
                 <div className="note_main__title">
                     <input className="sidebar__options__search_bar" type="text" placeholder="Name your note..."
-                           value={this.props.note.title} onChange={this.updateNoteTitle}/>
+                           value={this.props.note.title} onChange={(ev) => this.updateNote({title: ev.target.value})}/>
                 </div>
                 <div className="note_main__wrapper">
                     <MediaQuery minWidth="1000px">
@@ -107,22 +84,13 @@ class NoteMain extends React.Component{
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        note: state.currentNote
-    }
-};
+const mapStateToProps = (state) => ({
+    note: state.currentNote
+});
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        updateNoteDispatcher: (note) => {
-            dispatch(changeNote(note))
-        },
-        addNoteDispatcher: (note) => dispatch(addNote(note))
-    }
-};
+const mapDispatchToProps = (dispatch) => ({
+    changeCurrentNoteDispatcher: (note) => dispatch(changeNote(note)),
+    addNoteDispatcher: (note) => dispatch(addNote(note))
+});
 
-export default connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(NoteMain);
+export default connect(mapStateToProps, mapDispatchToProps)(NoteMain);

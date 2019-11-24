@@ -1,3 +1,5 @@
+import NoteManager from "./NoteManager";
+
 export function getObjectCopy(obj){
     return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
 }
@@ -31,4 +33,18 @@ export function noteToNoteList(x){
         xCopy.title = "Untitled Note";
 
     return xCopy;
+}
+
+export function updateCurrentNote(note, change, changeCurrentNoteDispatcher){
+    let newNote = getObjectCopy(note);
+    newNote = Object.assign(newNote, change);
+
+    if(!newNote.id){
+        NoteManager.database.save(newNote).then(x => {
+            changeCurrentNoteDispatcher(x);
+        });
+    }else {
+        NoteManager.startSaveTimer(newNote);
+        changeCurrentNoteDispatcher(newNote);
+    }
 }
