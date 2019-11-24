@@ -18,11 +18,19 @@ export const notes = (state = [], action) => {
         case 'LOAD_NOTES':
             return action.notes;
         case 'DELETE_NOTE':
-            const newState = state.filter(x => x.id !== action.note.id);
+            const newStateDelete = state.filter(x => x.id !== action.note.id);
 
             NoteManager.database.delete(action.note.id);
 
-            return newState;
+            return newStateDelete;
+        case 'ADD_NOTE':
+            const newStateAdd = Array.from(state);
+
+            console.assert(action.note.id !== null, "Adding a note without ID to the list.");
+
+            newStateAdd.push(action.note);
+
+            return newStateAdd;
         default:
             return state;
     }

@@ -7,7 +7,7 @@ import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
 import {copyToClipboard} from "./Utils";
-import {changeNote, deleteNote} from "./Actions";
+import {addNote, changeNote, deleteNote} from "./Actions";
 import {connect} from "react-redux";
 
 function NotesListItemOptions({left, top, display, events}) {
@@ -192,7 +192,7 @@ class NotesList extends React.Component {
                     NoteManager.database.save(duplicatedNote)
                         .then((x) => {
                             this.props.updateCurrentNoteDispatcher(x);
-                            PubSub.publish("ReloadSideNavNotes");
+                            this.props.addNoteDispatcher(x);
                         });
                 });
             }, 'modal__options__option--block')
@@ -249,7 +249,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
     return {
         updateCurrentNoteDispatcher: (note) => dispatch(changeNote(note)),
-        deleteNoteDispatcher: (note) => dispatch(deleteNote(note))
+        deleteNoteDispatcher: (note) => dispatch(deleteNote(note)),
+        addNoteDispatcher: (note) => dispatch(addNote(note))
     }
 };
 

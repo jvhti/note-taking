@@ -12,3 +12,9 @@ export const deleteNote = (note) => ({
     type: 'DELETE_NOTE',
     note
 });
+
+
+export const addNote = (note) => ({
+    type: 'ADD_NOTE',
+    note
+});
