@@ -1,5 +1,7 @@
 import NoteLocalStorageDatabase from "./Database/NoteLocalStorageDatabase";
-import {loadNotesList} from "./Actions";
+import {addNote, changeNote, loadNotesList, updateNote} from "./Actions";
+import {noteToNoteList} from "./Utils";
+import Note from "./Database/Note";
 
 class NoteManager{
     constructor(){
@@ -17,12 +19,23 @@ class NoteManager{
     get database(){ return this._database; }
     set store(s) { this._store = s; }
 
+
+    createNewNote() {
+        this._store.dispatch(changeNote(new Note()));
+    }
+
     saveNote(note) {
         console.log("save");
         delete note._saveNoteTimer;
-        this.database.save(note);
 
-        this.updateStoreNoteList();
+        this.database.save(note).then(x => {
+             if(!note.id && x) {
+                 this._store.dispatch(addNote(noteToNoteList(x)));
+             }else if(this._store.getState().notes.filter(x => x.id === note.id).length)
+                 this._store.dispatch(updateNote(noteToNoteList(note)));
+             else
+                 this._store.dispatch(addNote(noteToNoteList(note)));
+        });
     }
 
     startSaveTimer(note) {

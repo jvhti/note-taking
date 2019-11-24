@@ -20,3 +20,15 @@ export function copyToClipboard(text) {
     document.execCommand('copy');
     document.body.removeChild(el);
 }
+
+
+export function noteToNoteList(x){
+    let xCopy =  getObjectCopy(x);
+
+    xCopy.body = truncate.apply(xCopy.body, [30, true]);
+
+    if(!xCopy.title)
+        xCopy.title = "Untitled Note";
+
+    return xCopy;
+}

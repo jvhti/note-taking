@@ -6,7 +6,7 @@ import MarkdownIt from 'markdown-it';
 import "../node_modules/github-markdown-css/github-markdown.css";
 import NoteManager from './NoteManager';
 import {getObjectCopy} from "./Utils";
-import { changeNote } from './Actions';
+import {addNote, changeNote} from './Actions';
 import {connect} from "react-redux";
 
 function ModeSwitchButton({ onSwitch, state }) {
@@ -57,9 +57,15 @@ class NoteMain extends React.Component{
         let newNote = getObjectCopy(this.props.note);
         newNote = Object.assign(newNote, change);
 
-        NoteManager.startSaveTimer(newNote);
+        if(!newNote.id){
+            NoteManager.database.save(newNote).then(x => {
+                this.props.updateNoteDispatcher(x);
+            });
+        }else {
+            NoteManager.startSaveTimer(newNote);
+            this.props.updateNoteDispatcher(newNote);
+        }
 
-        this.props.updateNoteDispatcher(newNote);
     }
 
     updateNoteText(ev){
@@ -111,7 +117,8 @@ const mapDispatchToProps = (dispatch) => {
     return {
         updateNoteDispatcher: (note) => {
             dispatch(changeNote(note))
-        }
+        },
+        addNoteDispatcher: (note) => dispatch(addNote(note))
     }
 };
 

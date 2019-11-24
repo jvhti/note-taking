@@ -31,6 +31,11 @@ export const notes = (state = [], action) => {
             newStateAdd.push(action.note);
 
             return newStateAdd;
+        case 'UPDATE_NOTE':
+            return state.map((x) => {
+                if(x.id !== action.note.id) return x;
+                return action.note;
+            });
         default:
             return state;
     }

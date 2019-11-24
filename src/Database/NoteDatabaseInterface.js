@@ -1,6 +1,6 @@
 import Note from "./Note";
 import {List} from "immutable";
-import {getObjectCopy, truncate} from "../Utils";
+import {noteToNoteList} from "../Utils";
 
 export default class NoteDatabaseInterface{
     constructor(){
@@ -14,16 +14,7 @@ export default class NoteDatabaseInterface{
             if(titleFilter !== undefined)
                 notes = notes.filter(x => x.title.toLowerCase().includes(titleFilter.toLowerCase()));
 
-            resolve(notes.map(x => {
-                let xCopy =  getObjectCopy(x);
-
-                xCopy.body = truncate.apply(xCopy.body, [30, true]);
-
-                if(!xCopy.title)
-                    xCopy.title = "Untitled Note";
-
-                return xCopy;
-            }));
+            resolve(notes.map(x => noteToNoteList(x)));
         }));
     }
 
