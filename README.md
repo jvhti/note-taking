@@ -15,7 +15,7 @@ I'm still developing this project. Those are the nexts steps:
 5. Implement an IndexedDB Database Driver
 6. Write tests
 7. Check/Improve accessibility
-8. Use redux (remove PubSub)
+8. ~~Use redux (remove PubSub)~~
 9. Publish a production build and link here
 
 And here are some small things that can be done:
