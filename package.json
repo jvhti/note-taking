@@ -10,7 +10,6 @@
     "immutable": "^4.0.0-rc.12",
     "markdown-it": "^10.0.0",
     "node-sass": "^4.13.0",
-    "pubsub-js": "^1.7.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
     "react-fontawesome": "^1.6.1",

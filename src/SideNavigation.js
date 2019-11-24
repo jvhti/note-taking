@@ -2,12 +2,11 @@ import React from "react";
 import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import NoteManager from "./NoteManager";
-import PubSub from 'pubsub-js';
 import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
 import {copyToClipboard} from "./Utils";
-import {addNote, changeNote, deleteNote} from "./Actions";
+import {addNote, changeNote, closeModal, deleteNote, showModal} from "./Actions";
 import {connect} from "react-redux";
 
 function NotesListItemOptions({left, top, display, events}) {
@@ -113,7 +112,7 @@ class NotesList extends React.Component {
 
         const note = this.props.notes.find((x) => x.id === key);
 
-        const deleteModal = new ModalFactory()
+        const deleteModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Deletion Confirmation")
             .setDescription([`Are you sure that you want to delete the '${note.title}' note?`])
             .addOption('Yes', () => {
@@ -125,7 +124,7 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', deleteModal);
+        this.props.showModalDispatcher(deleteModal);
     }
 
     onOptionsPrint(){
@@ -135,7 +134,7 @@ class NotesList extends React.Component {
             return;
         }
 
-        const printModal = new ModalFactory()
+        const printModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Print Confirmation")
             .setDescription(["Are you sure that you want to print this note?"])
             .addOption('Yes', () => {
@@ -148,7 +147,7 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', printModal);
+        this.props.showModalDispatcher(printModal);
     }
 
     onOptionsShare(){
@@ -158,7 +157,7 @@ class NotesList extends React.Component {
             return;
         }
 
-        const shareModal = new ModalFactory()
+        const shareModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Share Options")
             .setDescription(["How do you want to share?"])
             .addOption('E-mail', () => {
@@ -174,7 +173,7 @@ class NotesList extends React.Component {
             }, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', shareModal);
+        this.props.showModalDispatcher(shareModal);
     }
 
     onOptionsDuplicate(){
@@ -186,7 +185,7 @@ class NotesList extends React.Component {
 
         const note = this.props.notes.find((x) => x.id === key);
 
-        const duplicationModal = new ModalFactory()
+        const duplicationModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Duplication Confirmation")
             .setDescription([`Are you sure that you want to duplicate the '${note.title}' note?`])
             .addOption('Yes', () => {
@@ -203,7 +202,7 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', duplicationModal);
+        this.props.showModalDispatcher(duplicationModal);
     }
 
     openNote(key, ev){
@@ -256,7 +255,9 @@ const mapDispatchToProps = (dispatch) => {
     return {
         updateCurrentNoteDispatcher: (note) => dispatch(changeNote(note)),
         deleteNoteDispatcher: (note) => dispatch(deleteNote(note)),
-        addNoteDispatcher: (note) => dispatch(addNote(note))
+        addNoteDispatcher: (note) => dispatch(addNote(note)),
+        showModalDispatcher: (modal) => dispatch(showModal(modal)),
+        closeModalDispatcher: (modal) => dispatch(closeModal(modal))
     }
 };
 
