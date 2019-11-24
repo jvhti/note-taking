@@ -93,11 +93,15 @@ class NotesList extends React.Component {
                 }
             });
 
+        this.removeEventListenerCloseOptions();
+    }
+
+    removeEventListenerCloseOptions() {
         window.removeEventListener("click", this.closeOptions);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("click", this.closeOptions);
+        this.removeEventListenerCloseOptions();
     }
 
     onOptionsDelete(){
@@ -220,10 +224,12 @@ class NotesList extends React.Component {
     }
 
     render() {
+        const notes = (this.props.notes || []).filter(x => x.title.toLowerCase().includes(this.props.filterByTitle.toLowerCase()));
+
         return (
             <React.Fragment>
                 <ul className="notes_list">
-                    { (this.props.notes || []).map((note) =>
+                    { (notes || []).map((note) =>
                         <NotesListItem key={note.id} onOpenOptions={this.openOptions.bind(this, note.id)}
                                        title={note.title} body={note.body} onClick={this.openNote.bind(this, note.id)}/>)}
                 </ul>
