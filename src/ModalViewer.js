@@ -1,7 +1,7 @@
 import {connect} from "react-redux";
 
-const ModalManager = ({modal}) => modal;
+const ModalViewer = ({modal}) => modal;
 
 const mapStateToProps = (state) => ({ modal: state.modal });
 
-export default connect(mapStateToProps)(ModalManager);
+export default connect(mapStateToProps)(ModalViewer);

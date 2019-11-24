@@ -4,7 +4,7 @@ import SideNavigation from "./SideNavigation";
 import NoteMain from "./NoteMain";
 import {library} from '@fortawesome/fontawesome-svg-core';
 import {faEdit, faEllipsisH, faFileAlt, faGlasses} from '@fortawesome/free-solid-svg-icons';
-import ModalManager from "./ModalManager";
+import ModalManager from "./ModalViewer";
 import {Provider} from "react-redux";
 import Store from "./Store";
 
