@@ -7,7 +7,7 @@ import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
 import {copyToClipboard} from "./Utils";
-import {changeNote} from "./Actions";
+import {changeNote, deleteNote} from "./Actions";
 import {connect} from "react-redux";
 
 function NotesListItemOptions({left, top, display, events}) {
@@ -46,39 +46,15 @@ class NotesList extends React.Component {
                 x: 0,
                 y: 0,
                 id: null
-            },
-            notes: []
+            }
         };
 
         this.closeOptions = this.closeOptions.bind(this);
-        this.updateList = this.updateList.bind(this);
 
         this.onOptionsDelete = this.onOptionsDelete.bind(this);
         this.onOptionsDuplicate = this.onOptionsDuplicate.bind(this);
         this.onOptionsShare = this.onOptionsShare.bind(this);
         this.onOptionsPrint = this.onOptionsPrint.bind(this);
-    }
-
-    updateList(){
-        NoteManager.database.getList(this.props.filterByTitle).then((x) => this.setState({
-            ...this.state,
-            notes: x
-        }));
-    }
-
-    componentDidMount() {
-        this.updateList();
-
-        this.reloadNotesSubscribeToken = PubSub.subscribe("ReloadSideNavNotes", (message) => {
-            if(message !== "ReloadSideNavNotes") return;
-
-            this.updateList();
-        });
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if(prevProps.filterByTitle !== this.props.filterByTitle)
-            this.updateList();
     }
 
     openOptions(key, ev){
@@ -122,8 +98,6 @@ class NotesList extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener("click", this.closeOptions);
-        if(this.reloadNotesSubscribeToken)
-            PubSub.unsubscribe(this.reloadNotesSubscribeToken);
     }
 
     onOptionsDelete(){
@@ -133,17 +107,17 @@ class NotesList extends React.Component {
             return;
         }
 
-        const note = this.state.notes.find((x) => x.id === key);
+        const note = this.props.notes.find((x) => x.id === key);
 
         const deleteModal = new ModalFactory()
             .setTitle("Deletion Confirmation")
             .setDescription([`Are you sure that you want to delete the '${note.title}' note?`])
             .addOption('Yes', () => {
-                NoteManager.database.delete(key)
-                    .then(() => { PubSub.publish("ReloadSideNavNotes"); })
-                    .then(() => { return NoteManager.database.get(1); })
-                    .then((x) => { this.props.updateCurrentNoteDispatcher( x || new Note()); })
-            }, 'modal__options__option--block')
+                if(note.id === this.props.currentNoteId)
+                    NoteManager.database.getFirst().then(x => this.props.updateCurrentNoteDispatcher( x || new Note()));
+
+                this.props.deleteNoteDispatcher(note);
+                }, 'modal__options__option--block')
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
@@ -206,7 +180,7 @@ class NotesList extends React.Component {
             return;
         }
 
-        const note = this.state.notes.find((x) => x.id === key);
+        const note = this.props.notes.find((x) => x.id === key);
 
         const duplicationModal = new ModalFactory()
             .setTitle("Duplication Confirmation")
@@ -249,7 +223,7 @@ class NotesList extends React.Component {
         return (
             <React.Fragment>
                 <ul className="notes_list">
-                    { this.state.notes.map((note) =>
+                    { (this.props.notes || []).map((note) =>
                         <NotesListItem key={note.id} onOpenOptions={this.openOptions.bind(this, note.id)}
                                        title={note.title} body={note.body} onClick={this.openNote.bind(this, note.id)}/>)}
                 </ul>
@@ -264,6 +238,22 @@ class NotesList extends React.Component {
         );
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        notes: state.notes,
+        currentNoteId: (state.currentNote || {id: null}).id
+    }
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        updateCurrentNoteDispatcher: (note) => dispatch(changeNote(note)),
+        deleteNoteDispatcher: (note) => dispatch(deleteNote(note))
+    }
+};
+
+const NotesListConnected = connect(mapStateToProps, mapDispatchToProps)(NotesList);
 
 class SideNavigation extends React.Component {
     constructor(props){
@@ -296,20 +286,10 @@ class SideNavigation extends React.Component {
                         className="sr-only">Create new note</span></button>
                 </div>
                 <hr className="sidebar__separator"/>
-                <NotesList updateCurrentNoteDispatcher={this.props.updateCurrentNoteDispatcher} filterByTitle={this.state.searchValue}/>
+                <NotesListConnected filterByTitle={this.state.searchValue}/>
             </aside>
         );
     }
 }
 
-
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        updateCurrentNoteDispatcher: (note) => {
-            dispatch(changeNote(note))
-        }
-    }
-};
-
-export default connect(null, mapDispatchToProps)(SideNavigation);
+export default SideNavigation;

@@ -1,10 +1,12 @@
 import NoteLocalStorageDatabase from "./Database/NoteLocalStorageDatabase";
-import PubSub from "pubsub-js";
+import {loadNotesList} from "./Actions";
 
 class NoteManager{
     constructor(){
         if(!NoteManager.instance){
             this._database = new NoteLocalStorageDatabase();
+
+            this._store = null;
 
             NoteManager.instance = this;
         }
@@ -13,13 +15,14 @@ class NoteManager{
     }
 
     get database(){ return this._database; }
+    set store(s) { this._store = s; }
 
     saveNote(note) {
         console.log("save");
-        note._saveNoteTimer = null;
+        delete note._saveNoteTimer;
         this.database.save(note);
 
-        PubSub.publish("ReloadSideNavNotes");
+        this.updateStoreNoteList();
     }
 
     startSaveTimer(note) {
@@ -40,9 +43,14 @@ class NoteManager{
             this.saveNote(note);
         }
     }
+
+    updateStoreNoteList(){
+        this.database.getList().then((l) => {
+            this._store.dispatch(loadNotesList(l.toJS()));
+        });
+    }
 }
 
 const instance = new NoteManager();
-Object.freeze(instance);
 
 export default instance;

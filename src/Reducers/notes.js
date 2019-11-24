@@ -1,6 +1,6 @@
 import NoteManager from "../NoteManager";
 
-const currentNote = (state = null, action) => {
+export const currentNote = (state = null, action) => {
     switch (action.type) {
         case 'CHANGE_NOTE':
             if(state && state.id !== action.note.id && state._saveNoteTimer)
@@ -9,8 +9,21 @@ const currentNote = (state = null, action) => {
             return action.note;
 
         default:
-            return state
+            return state;
     }
 };
 
-export default currentNote
+export const notes = (state = [], action) => {
+    switch (action.type) {
+        case 'LOAD_NOTES':
+            return action.notes;
+        case 'DELETE_NOTE':
+            const newState = state.filter(x => x.id !== action.note.id);
+
+            NoteManager.database.delete(action.note.id);
+
+            return newState;
+        default:
+            return state;
+    }
+};

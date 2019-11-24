@@ -1,4 +1,4 @@
 import { combineReducers } from 'redux';
-import currentNote from './notes';
+import {currentNote, notes} from './notes';
 
-export default combineReducers({currentNote})
+export default combineReducers({currentNote, notes})
