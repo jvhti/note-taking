@@ -1,8 +1,11 @@
 import Modal from '../Modal';
 import React from 'react';
-import PubSub from "pubsub-js";
 
 export default class ModalFactory {
+
+    constructor(closeDispatcher){
+        this._closeDispatcher = closeDispatcher;
+    }
 
     setTitle(title){
         this._title = title;
@@ -22,7 +25,7 @@ export default class ModalFactory {
     addOption(name, event, classes, styles){
         if(typeof this._options === 'undefined') this._options = [];
 
-        this._options.push(<button key={this._options.length + 1} className={"modal__options__option " + (classes || "")} onClick={(ev) => {event(ev); PubSub.publish("CloseModal");}} style={styles || {}}>{name}</button>);
+        this._options.push(<button key={this._options.length + 1} className={"modal__options__option " + (classes || "")} onClick={(ev) => { event(ev); this._closeDispatcher(); }} style={styles || {}}>{name}</button>);
 
         return this;
     }

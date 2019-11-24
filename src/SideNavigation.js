@@ -2,11 +2,12 @@ import React from "react";
 import './scss/SideNavigation.scss';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import NoteManager from "./NoteManager";
-import PubSub from 'pubsub-js';
 import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
 import {copyToClipboard} from "./Utils";
+import {addNote, changeNote, closeModal, deleteNote, showModal} from "./Actions";
+import {connect} from "react-redux";
 
 function NotesListItemOptions({left, top, display, events}) {
     const style = {left, top, display};
@@ -44,39 +45,15 @@ class NotesList extends React.Component {
                 x: 0,
                 y: 0,
                 id: null
-            },
-            notes: []
+            }
         };
 
         this.closeOptions = this.closeOptions.bind(this);
-        this.updateList = this.updateList.bind(this);
 
         this.onOptionsDelete = this.onOptionsDelete.bind(this);
         this.onOptionsDuplicate = this.onOptionsDuplicate.bind(this);
         this.onOptionsShare = this.onOptionsShare.bind(this);
         this.onOptionsPrint = this.onOptionsPrint.bind(this);
-    }
-
-    updateList(){
-        NoteManager.database.getList(this.props.filterByTitle).then((x) => this.setState({
-            ...this.state,
-            notes: x
-        }));
-    }
-
-    componentDidMount() {
-        this.updateList();
-
-        this.reloadNotesSubscribeToken = PubSub.subscribe("ReloadSideNavNotes", (message) => {
-            if(message !== "ReloadSideNavNotes") return;
-
-            this.updateList();
-        });
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if(prevProps.filterByTitle !== this.props.filterByTitle)
-            this.updateList();
     }
 
     openOptions(key, ev){
@@ -115,13 +92,15 @@ class NotesList extends React.Component {
                 }
             });
 
+        this.removeEventListenerCloseOptions();
+    }
+
+    removeEventListenerCloseOptions() {
         window.removeEventListener("click", this.closeOptions);
     }
 
     componentWillUnmount() {
-        window.removeEventListener("click", this.closeOptions);
-        if(this.reloadNotesSubscribeToken)
-            PubSub.unsubscribe(this.reloadNotesSubscribeToken);
+        this.removeEventListenerCloseOptions();
     }
 
     onOptionsDelete(){
@@ -131,31 +110,31 @@ class NotesList extends React.Component {
             return;
         }
 
-        const note = this.state.notes.find((x) => x.id === key);
+        const note = this.props.notes.find((x) => x.id === key);
 
-        const deleteModal = new ModalFactory()
+        const deleteModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Deletion Confirmation")
             .setDescription([`Are you sure that you want to delete the '${note.title}' note?`])
             .addOption('Yes', () => {
-                NoteManager.database.delete(key)
-                    .then(() => { PubSub.publish("ReloadSideNavNotes"); })
-                    .then(() => { return NoteManager.database.get(1); })
-                    .then((x) => { PubSub.publish("ChangeNote", x || new Note()); })
-            }, 'modal__options__option--block')
+                if(note.id === this.props.currentNoteId)
+                    NoteManager.database.getFirst().then(x => this.props.updateCurrentNoteDispatcher( x || new Note()));
+
+                this.props.deleteNoteDispatcher(note);
+                }, 'modal__options__option--block')
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', deleteModal);
+        this.props.showModalDispatcher(deleteModal);
     }
 
-    onOptionsPrint(ev){
+    onOptionsPrint(){
         const key = this.state.options.id;
         if(!key){
             console.error("Called DUPLICATE menu option without an Option ID");
             return;
         }
 
-        const printModal = new ModalFactory()
+        const printModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Print Confirmation")
             .setDescription(["Are you sure that you want to print this note?"])
             .addOption('Yes', () => {
@@ -168,17 +147,17 @@ class NotesList extends React.Component {
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', printModal);
+        this.props.showModalDispatcher(printModal);
     }
 
-    onOptionsShare(ev){
+    onOptionsShare(){
         const key = this.state.options.id;
         if(!key){
             console.error("Called SHARE menu option without an Option ID");
             return;
         }
 
-        const shareModal = new ModalFactory()
+        const shareModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Share Options")
             .setDescription(["How do you want to share?"])
             .addOption('E-mail', () => {
@@ -194,19 +173,19 @@ class NotesList extends React.Component {
             }, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', shareModal);
+        this.props.showModalDispatcher(shareModal);
     }
 
-    onOptionsDuplicate(ev){
+    onOptionsDuplicate(){
         const key = this.state.options.id;
         if(!key){
             console.error("Called DUPLICATE menu option without an Option ID");
             return;
         }
 
-        const note = this.state.notes.find((x) => x.id === key);
+        const note = this.props.notes.find((x) => x.id === key);
 
-        const duplicationModal = new ModalFactory()
+        const duplicationModal = new ModalFactory(this.props.closeModalDispatcher)
             .setTitle("Duplication Confirmation")
             .setDescription([`Are you sure that you want to duplicate the '${note.title}' note?`])
             .addOption('Yes', () => {
@@ -215,15 +194,15 @@ class NotesList extends React.Component {
 
                     NoteManager.database.save(duplicatedNote)
                         .then((x) => {
-                            PubSub.publish("ChangeNote", x);
-                            PubSub.publish("ReloadSideNavNotes");
+                            this.props.updateCurrentNoteDispatcher(x);
+                            this.props.addNoteDispatcher(x);
                         });
                 });
             }, 'modal__options__option--block')
             .addOption('No', () => {}, 'modal__options__option--block')
             .build();
 
-        PubSub.publish('OpenModal', duplicationModal);
+        this.props.showModalDispatcher(duplicationModal);
     }
 
     openNote(key, ev){
@@ -239,15 +218,17 @@ class NotesList extends React.Component {
         if(parent != null) return;
 
         NoteManager.database.get(key).then((x) => {
-            PubSub.publish("ChangeNote", x);
+            this.props.updateCurrentNoteDispatcher(x);
         });
     }
 
     render() {
+        const notes = (this.props.notes || []).filter(x => x.title.toLowerCase().includes(this.props.filterByTitle.toLowerCase()));
+
         return (
             <React.Fragment>
                 <ul className="notes_list">
-                    { this.state.notes.map((note) =>
+                    { (notes || []).map((note) =>
                         <NotesListItem key={note.id} onOpenOptions={this.openOptions.bind(this, note.id)}
                                        title={note.title} body={note.body} onClick={this.openNote.bind(this, note.id)}/>)}
                 </ul>
@@ -263,6 +244,25 @@ class NotesList extends React.Component {
     }
 }
 
+const mapStateToProps = (state) => {
+    return {
+        notes: state.notes,
+        currentNoteId: (state.currentNote || {id: null}).id
+    }
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        updateCurrentNoteDispatcher: (note) => dispatch(changeNote(note)),
+        deleteNoteDispatcher: (note) => dispatch(deleteNote(note)),
+        addNoteDispatcher: (note) => dispatch(addNote(note)),
+        showModalDispatcher: (modal) => dispatch(showModal(modal)),
+        closeModalDispatcher: (modal) => dispatch(closeModal(modal))
+    }
+};
+
+const NotesListConnected = connect(mapStateToProps, mapDispatchToProps)(NotesList);
+
 class SideNavigation extends React.Component {
     constructor(props){
         super(props);
@@ -270,7 +270,6 @@ class SideNavigation extends React.Component {
         this.state = {searchValue: ""};
 
         this.updateSearchValue = this.updateSearchValue.bind(this);
-        this.createNewNote = this.createNewNote.bind(this);
     }
 
     updateSearchValue(ev){
@@ -280,21 +279,17 @@ class SideNavigation extends React.Component {
         });
     }
 
-    createNewNote() {
-        PubSub.publish("ChangeNote", new Note());
-    }
-
     render() {
         return (
             <aside className="sidebar">
                 <div className="sidebar__options">
                     <input className="sidebar__options__search_bar" type="search" placeholder="Search Notes"
                            value={this.state.searchValue} onChange={this.updateSearchValue}/>
-                    <button className="sidebar__options__new_note" onClick={this.createNewNote}><FontAwesomeIcon icon="file-alt"/><span
+                    <button className="sidebar__options__new_note" onClick={() => NoteManager.createNewNote()}><FontAwesomeIcon icon="file-alt"/><span
                         className="sr-only">Create new note</span></button>
                 </div>
                 <hr className="sidebar__separator"/>
-                <NotesList filterByTitle={this.state.searchValue}/>
+                <NotesListConnected filterByTitle={this.state.searchValue}/>
             </aside>
         );
     }
