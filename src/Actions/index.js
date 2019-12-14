@@ -31,3 +31,14 @@ export const showModal = (modal) => ({
 export const closeModal = () => ({
     type: 'CLOSE_MODAL'
 });
+
+export const openOptionsContextMenu = (id, x, y) => ({
+    type: 'OPEN_OPTIONS_CONTEXT_MENU',
+    id,
+    x,
+    y
+});
+
+export const closeOptionsContextMenu = () => ({
+    type: 'CLOSE_OPTIONS_CONTEXT_MENU'
+});

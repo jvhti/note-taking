@@ -6,7 +6,15 @@ import Note from "./Database/Note";
 import ModalFactory from "./Factories/ModalFactory";
 import MarkdownIt from 'markdown-it';
 import {copyToClipboard} from "./Utils";
-import {addNote, changeNote, closeModal, deleteNote, showModal} from "./Actions";
+import {
+    addNote,
+    changeNote,
+    closeModal,
+    closeOptionsContextMenu,
+    deleteNote,
+    openOptionsContextMenu,
+    showModal
+} from "./Actions";
 import {connect} from "react-redux";
 
 function NotesListItemOptions({left, top, display, events}) {
@@ -39,14 +47,6 @@ class NotesList extends React.Component {
 
     constructor(props){
         super(props);
-        this.state = {
-            options: {
-                display: "none",
-                x: 0,
-                y: 0,
-                id: null
-            }
-        };
 
         this.closeOptions = this.closeOptions.bind(this);
 
@@ -57,23 +57,14 @@ class NotesList extends React.Component {
     }
 
     openOptions(key, ev){
-        const newState = {
-            ...this.state,
-            options : {
-                ...this.state.options,
-                x: ev.clientX,
-                y: ev.clientY,
-                display: this.state.options.id === key && this.state.options.display === "block" ? "none" : "block",
-                id: key
-            }
-        };
-
-        this.setState(newState);
-
-        if (newState.options.display === "block")
+        if(this.props.optionsContextMenu.id === key && this.props.optionsContextMenu.display === "block")
+            this.props.closeOptionsContextMenuDispatcher();
+        else {
+            this.props.openOptionsContextMenuDispatcher(key, ev.clientX, ev.clientY);
             setTimeout(() => {
                 window.addEventListener("click", this.closeOptions);
             }, 1);
+        }
     };
 
     closeOptions(ev) {
@@ -82,15 +73,9 @@ class NotesList extends React.Component {
             parent = parent.parentElement;
         }while (parent != null && !parent.classList.contains("notes_list__item__header__options"));
 
-        if (parent === null && this.state.options.display === "block")
-            this.setState({
-                ...this.state,
-                options: {
-                    ...this.state.options,
-                    display: "none",
-                    id: null
-                }
-            });
+        if (parent === null && this.props.optionsContextMenu.display === "block") {
+            this.props.closeOptionsContextMenuDispatcher();
+        }
 
         this.removeEventListenerCloseOptions();
     }
@@ -104,7 +89,7 @@ class NotesList extends React.Component {
     }
 
     onOptions(name, modalProto){
-        const key = this.state.options.id;
+        const key = this.props.optionsContextMenu.id;
         if(!key){
             console.error(`Called ${name} menu option without an Option ID`);
             return;
@@ -207,7 +192,10 @@ class NotesList extends React.Component {
     }
 
     render() {
-        const notes = (this.props.notes || []).filter(x => x.title.toLowerCase().includes(this.props.filterByTitle.toLowerCase()));
+        const notes = this.props.filterByTitle ?
+            (this.props.notes || [])
+                .filter(x => x.title.toLowerCase().includes(this.props.filterByTitle.toLowerCase()))
+            : (this.props.notes || []);
 
         return (
             <React.Fragment>
@@ -221,8 +209,7 @@ class NotesList extends React.Component {
                     onPrint: this.onOptionsPrint,
                     onShare: this.onOptionsShare,
                     onDuplicate: this.onOptionsDuplicate
-                }} display={this.state.options.display} left={this.state.options.x} top={this.state.options.y}/>
-                {/* Can pick left and top offset from ev.pageX and ev.pageY */}
+                }} display={this.props.optionsContextMenu.display} left={this.props.optionsContextMenu.x} top={this.props.optionsContextMenu.y}/>
             </React.Fragment>
         );
     }
@@ -231,7 +218,8 @@ class NotesList extends React.Component {
 const mapStateToProps = (state) => {
     return {
         notes: state.notes,
-        currentNoteId: (state.currentNote || {id: null}).id
+        currentNoteId: (state.currentNote || {id: null}).id,
+        optionsContextMenu: state.optionsContextMenu
     }
 };
 
@@ -241,7 +229,9 @@ const mapDispatchToProps = (dispatch) => {
         deleteNoteDispatcher: (note) => dispatch(deleteNote(note)),
         addNoteDispatcher: (note) => dispatch(addNote(note)),
         showModalDispatcher: (modal) => dispatch(showModal(modal)),
-        closeModalDispatcher: (modal) => dispatch(closeModal(modal))
+        closeModalDispatcher: (modal) => dispatch(closeModal(modal)),
+        openOptionsContextMenuDispatcher: (id, x, y) => dispatch(openOptionsContextMenu(id, x, y)),
+        closeOptionsContextMenuDispatcher: () => dispatch(closeOptionsContextMenu())
     }
 };
 
@@ -269,8 +259,9 @@ class SideNavigation extends React.Component {
                 <div className="sidebar__options">
                     <input className="sidebar__options__search_bar" type="search" placeholder="Search Notes"
                            value={this.state.searchValue} onChange={this.updateSearchValue}/>
-                    <button className="sidebar__options__new_note" onClick={() => NoteManager.createNewNote()}><FontAwesomeIcon icon="file-alt"/><span
-                        className="sr-only">Create new note</span></button>
+                    <button className="sidebar__options__new_note" onClick={() => NoteManager.createNewNote()}>
+                        <FontAwesomeIcon icon="file-alt"/><span className="sr-only">Create new note</span>
+                    </button>
                 </div>
                 <hr className="sidebar__separator"/>
                 <NotesListConnected filterByTitle={this.state.searchValue}/>
